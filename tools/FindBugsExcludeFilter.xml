@@ -1,0 +1,189 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<FindBugsFilter> <!-- sketches-core -->
+
+  <!-- Too many false positives to be useful.  I could not make it happy :( -->
+  <Match>
+    <Bug pattern="SF_SWITCH_NO_DEFAULT" />
+  </Match>
+
+  <!-- False positive.  FindBugs complains if DQS_RESIZE_THRESHOLD == REBUILD_THRESHOLD, 
+       but this allows us to tune these constants for different sketches. -->
+  <Match>
+    <Bug pattern="DB_DUPLICATE_BRANCHES" />
+    <Class name="org.apache.datasketches.theta.DirectQuickSelectSketchR" />
+    <Method name="setHashTableThreshold" />
+  </Match>
+
+  <!-- False positive.  In this case we want to ignore the exceptions -->
+  <Match>
+    <Bug pattern="SSD_DO_NOT_USE_INSTANCE_LOCK_ON_SHARED_STATIC_DATA" />
+    <Class name="org.apache.datasketches.theta.ConcurrentPropagationService" />
+    <Method name="getInstance" />
+  </Match>
+  <Match>
+    <Bug pattern="DE_MIGHT_IGNORE" />
+    <Class name="org.apache.datasketches.theta.SetOpsCornerCasesTest" />
+    <Method name="checkSeedHash" />
+  </Match>
+  
+  <Match>   <!-- Exclude for test classes; too many False Positives. -->
+    <Bug pattern="NP_NULL_PARAM_DEREF_NONVIRTUAL" />
+    <Class name="~.*\.*Test" />
+  </Match>
+  
+  <Match>   <!-- Exclude for test classes; too many False Positives. -->
+    <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE" />
+    <Class name="~.*\.*Test" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+    <Class name="~.*\.Group" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="VO_VOLATILE_INCREMENT" />
+    <Class name="~.*\.Concurrent.+QuickSelectSketch" />
+  </Match>
+  
+  <Match> 
+    <Class name="~.*\.TestAllTest" />
+  </Match>
+  
+  <Match>   <!-- Exclude for test classes; too many False Positives. -->
+    <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT" />
+    <Class name="~.*\.*Test" />
+  </Match>
+  
+  <Match>   <!-- Too many False Positives. -->
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+
+  <Match>   <!-- Harmless in the Builder -->
+    <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+    <Class name="org.apache.datasketches.theta.UpdateSketchBuilder" />
+  </Match>
+
+  <Match> <!-- Too many False Positives -->
+    <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- False positive -->
+    <Class name="org.apache.datasketches.cpc.CpcWrapper" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- False positive -->
+    <Class name="org.apache.datasketches.tuple.arrayofdoubles.ArrayOfDoublesAnotBImpl" />
+    <Method name="update" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- Only used in test -->
+    <Class name="org.apache.datasketches.cpc.CompressionCharacterization" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- Only used in test -->
+    <Class name="org.apache.datasketches.cpc.MergingValidation" />
+  </Match>
+
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- Only used in test -->
+    <Class name="org.apache.datasketches.cpc.QuickMergingValidation" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- Only used in test -->
+    <Class name="org.apache.datasketches.cpc.StreamingValidation" />
+  </Match>
+  
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2" /> <!-- Only used in test -->
+    <Class name="org.apache.datasketches.req.ReqDebugImpl" />
+  </Match>
+  
+  <Match> <!-- Exclude Test clases and packages -->
+    <Class name="~.*Test$"/>
+  </Match>
+  
+  <Match>
+    <Package name="~test\..*"/>
+  </Match>
+
+</FindBugsFilter>
+
+
+
+<!--  Examples: -->
+
+<!-- Exclude java.* classes -->
+  <!--
+  <Match>
+    <Package name="java\.*" />
+  </Match>
+-->
+
+  <!-- Exclude test classes -->
+<!-- 
+  <Match>
+    <Class name="~.*\.*Test" />
+  </Match>
+-->
+
+<!--
+     <Match>
+       <Class name="com.foobar.ClassNotToBeAnalyzed" />
+     </Match>
+-->
+<!--
+     <Match>
+       <Class name="com.foobar.ClassWithSomeBugsMatched" />
+       <Bug code="DE,UrF,SIC" />
+     </Match>
+-->
+     <!-- Match all XYZ violations. -->
+<!--
+     <Match>
+       <Bug code="XYZ" />
+     </Match>
+-->
+     <!-- Match all doublecheck violations in these methods of "AnotherClass". -->
+<!--
+     <Match>
+       <Class name="com.foobar.AnotherClass" />
+       <Or>
+         <Method name="nonOverloadedMethod" />
+         <Method name="frob" params="int,java.lang.String" returns="void" />
+         <Method name="blat" params="" returns="boolean" />
+       </Or>
+       <Bug code="DC" />
+     </Match>
+-->
+     <!-- A method with a dead local store false positive (medium priority). -->
+<!--
+     <Match>
+       <Class name="com.foobar.MyClass" />
+       <Method name="someMethod" />
+       <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+       <Priority value="2" />
+     </Match>
+-->
