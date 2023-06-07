@@ -334,7 +334,7 @@ public class Union extends BaseHllSketch {
    * @return the union of the two sketches in the form of the internal HllSketchImpl, which is
    * always in HLL_8 form.
    */
-  private static HllSketchImpl unionImpl(final HllSketch source, final HllSketch gadget,
+  public static HllSketchImpl unionImpl(final HllSketch source, final HllSketch gadget,
       final int lgMaxK) {
     assert gadget.getTgtHllType() == HLL_8;
     if ((source == null) || source.isEmpty()) {
@@ -419,7 +419,9 @@ public class Union extends BaseHllSketch {
         break;
       }
       case 12://src <= max, src <  gdt, gdtHLL, gdtHeap
-      { //Action: downsample gdt to srcLgK, forward HLL merge w/autofold, ooof=True
+      {
+        // 这里会下采样，按照最小的算
+        //Action: downsample gdt to srcLgK, forward HLL merge w/autofold, ooof=True
         final HllSketch gdtHll8Heap = downsample(gadget, srcLgK);
         //merge src(Hll4,6,8;heap/mem,Mode=HLL) -> gdt(Hll8,heap,hll)
         mergeHlltoHLLmode(source, gdtHll8Heap, srcLgK, gadgetLgK, srcIsMem, false);
@@ -477,7 +479,7 @@ public class Union extends BaseHllSketch {
         : HllSketch.writableWrap(wmem, false);                        //wrap & return
   }
 
-  private static final void mergeHlltoHLLmode(final HllSketch src, final HllSketch tgt,
+  public static final void mergeHlltoHLLmode(final HllSketch src, final HllSketch tgt,
       final int srcLgK, final int tgtLgK, final boolean srcIsMem, final boolean tgtIsMem) {
       final int sw = (tgtIsMem ? 1 : 0) | (srcIsMem ? 2 : 0)
           | ((srcLgK > tgtLgK) ? 4 : 0) | ((src.getTgtHllType() != HLL_8) ? 8 : 0);

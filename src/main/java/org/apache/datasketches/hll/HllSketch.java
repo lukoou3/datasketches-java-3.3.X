@@ -102,6 +102,7 @@ public class HllSketch extends BaseHllSketch {
    * @param tgtHllType the desired Hll type.
    */
   public HllSketch(final int lgConfigK, final TgtHllType tgtHllType) {
+    // hll默认实现是CouponList
     hllSketchImpl = new CouponList(HllUtil.checkLgK(lgConfigK), tgtHllType, CurMode.LIST);
   }
 

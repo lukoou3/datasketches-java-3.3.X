@@ -208,6 +208,13 @@ class CouponList extends AbstractCoupons {
     return new CouponList(lgConfigK, tgtHllType, CurMode.LIST);
   }
 
+  /**
+   *  从CouponList升级到CouponHashSet：
+   *     CouponList直接用array储存coupon，容量不够时升级为CouponHashSet
+   *     迭代数组中coupon，更新到CouponHashSet
+   *     CouponList也是会去重的，数组长度是8，判断相同的代价较小
+   *
+   */
   static final HllSketchImpl promoteHeapListToSet(final CouponList list) {
     final int couponCount = list.couponCount;
     final int[] arr = list.couponIntArr;
@@ -218,6 +225,11 @@ class CouponList extends AbstractCoupons {
     return chSet;
   }
 
+  /**
+   * 从CouponHashSet升级到HllArray：
+   *    CouponHashSet用hash数组储存coupon，容量不够时升级为HllArray
+   *    迭代CouponHashSet中的coupon(过滤不为0的即可)，更新到HllArray
+   */
   //Promotional move of coupons to an HllSketch from either List or Set.
   //called by CouponHashSet.couponUpdate()
   //called by CouponList.couponUpdate()

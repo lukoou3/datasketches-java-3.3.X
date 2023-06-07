@@ -40,6 +40,7 @@ import org.apache.datasketches.memory.WritableMemory;
  * @author Kevin Lang
  */
 abstract class HllArray extends AbstractHllArray {
+  // Hll实现所定义的变量都定义在这，子类没有自己的属性，子类就是每个桶的字节数不一样而已
   boolean oooFlag = false; //Out-Of-Order Flag
   boolean rebuildCurMinNumKxQ = false;
   int curMin; //always zero for Hll6 and Hll8, only used by Hll4Array

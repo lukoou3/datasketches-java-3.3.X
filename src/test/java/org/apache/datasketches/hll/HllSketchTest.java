@@ -40,10 +40,57 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.testng.annotations.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Lee Rhodes
  */
 public class HllSketchTest {
+
+  @Test
+  public void test() {
+    HllSketch sketch = new HllSketch(12);
+    for (int key = 0; key < 10; key++){
+      sketch.update(key + "");
+    }
+    sketch.getEstimate();
+    System.out.println(sketch.toString());
+    System.out.println("size:" + sketch.toCompactByteArray().length);
+    System.out.println("###################");
+    System.out.println("estimate"+ sketch.getEstimate());
+  }
+
+  @Test
+  public void test2() {
+    HllSketch sketch = new HllSketch(12);
+    Set<String> names = new HashSet<>();
+    for (int key = 0; key < 1000000; key++){
+      if("384".equals(key +"") || "7".equals(key +"")){
+        System.out.println(key);
+      }
+      sketch.update(key + "");
+      String name = sketch.hllSketchImpl.getClass().getName();
+      if(!names.contains(name)){
+        names.add(name);
+        System.out.println(key + "," + name);
+      }
+    }
+  }
+
+  @Test
+  public void testCouponList() {
+    HllSketch sketch = new HllSketch(12);
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    sketch.update("0");
+    String name = sketch.hllSketchImpl.getClass().getName();
+  }
 
   @Test
   public void checkCopies() {

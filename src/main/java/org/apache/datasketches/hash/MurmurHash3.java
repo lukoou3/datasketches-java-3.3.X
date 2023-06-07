@@ -29,6 +29,9 @@ import org.apache.datasketches.Util;
 import org.apache.datasketches.memory.Memory;
 
 /**
+ * MurmurHash3是一个快速、非加密的128位哈希函数，具有出色的雪崩和双向位独立特性。
+ * Austin Appleby的C++MurmurHash3_x64_128（…），在公共域中的最终修订版150，是Java实现的灵感来源。
+ *
  * <p>
  * The MurmurHash3 is a fast, non-cryptographic, 128-bit hash function that has
  * excellent avalanche and 2-way bit independence properties.

@@ -77,10 +77,13 @@ final class Hll4Array extends HllArray {
     return new Hll4Array(this);
   }
 
+  // 核心更新方法
   @Override
   HllSketchImpl couponUpdate(final int coupon) {
+    //取出值
     final int newValue = coupon >>> KEY_BITS_26;
     final int configKmask = (1 << getLgConfigK()) - 1;
+    // 取出桶号
     final int slotNo = coupon & configKmask;
     updateSlotWithKxQ(slotNo, newValue);
     return this;

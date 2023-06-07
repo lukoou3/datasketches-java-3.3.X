@@ -393,8 +393,14 @@ abstract class BaseHllSketch {
     couponUpdate(coupon(hash(data, DEFAULT_UPDATE_SEED)));
   }
 
+  /**
+   * 重要!!!
+   * 桶和值的计算逻辑在这里，这里把这两个值合并到int中了，不影响计算结果
+   */
   private static final int coupon(final long[] hash) {
+    // 低位拿出是桶好
     final int addr26 = (int) ((hash[0] & KEY_MASK_26));
+    // 第一次出现 1 的位置值设置到桶中
     final int lz = Long.numberOfLeadingZeros(hash[1]);
     final int value = ((lz > 62 ? 62 : lz) + 1);
     return (value << KEY_BITS_26) | addr26;

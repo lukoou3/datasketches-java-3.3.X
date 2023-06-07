@@ -62,8 +62,10 @@ class Hll8Array extends HllArray {
     return new Hll8Array(this);
   }
 
+  // 核心更新方法
   @Override
   HllSketchImpl couponUpdate(final int coupon) {
+    // 无符号右移运算符
     final int newValue = coupon >>> KEY_BITS_26;
     final int configKmask = (1 << lgConfigK) - 1;
     final int slotNo = coupon & configKmask;
@@ -78,6 +80,7 @@ class Hll8Array extends HllArray {
 
   @Override
   final int getSlotValue(final int slotNo) {
+    // 只是用6个bit
     return hllByteArr[slotNo] & VAL_MASK_6;
   }
 
@@ -94,6 +97,7 @@ class Hll8Array extends HllArray {
   @Override
   //Used by Union when source is not HLL8
   final void updateSlotNoKxQ(final int slotNo, final int newValue) {
+    // 获取之前的值
     final int oldValue = getSlotValue(slotNo);
     if (newValue > oldValue) {
       hllByteArr[slotNo] = (byte) (newValue & VAL_MASK_6);
@@ -105,8 +109,11 @@ class Hll8Array extends HllArray {
   //updates HipAccum, CurMin, NumAtCurMin, KxQs and checks newValue > oldValue
   final void updateSlotWithKxQ(final int slotNo, final int newValue) {
     final int oldValue = getSlotValue(slotNo);
+    // 大于oldValue才会更新
     if (newValue > oldValue) {
+      // 只是用6个bit
       hllByteArr[slotNo] = (byte) (newValue & VAL_MASK_6);
+      // 下面的逻辑类似监控、断言容错辅助功能
       hipAndKxQIncrementalUpdate(this, oldValue, newValue);
       if (oldValue == 0) {
         numAtCurMin--; //interpret numAtCurMin as num Zeros
