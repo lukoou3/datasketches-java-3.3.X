@@ -4,17 +4,23 @@ import it.unimi.dsi.fastutil.doubles.Double2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
 import org.apache.datasketches.memory.internal.XxHash64;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 public class HyperLogLog {
-    private int p; // number of register bits
-    private int m; // m = 2^p
-    private byte[] regs; // 2^p number of bytes for register
-    private boolean bias = true;
+    int p; // number of register bits
+    int m; // m = 2^p
+    byte[] regs; // 2^p number of bytes for register
+    boolean bias;
 
     public static double[] inversePow2Data = IntStream.rangeClosed(0, Byte.MAX_VALUE).mapToDouble(v -> Math.pow
             (2, -v)).toArray();
+
+    public HyperLogLog(int precision) {
+        this(precision, true);
+    }
 
     public HyperLogLog(int precision,boolean bias) {
         if (precision > 18 || precision < 4) {
@@ -62,6 +68,32 @@ public class HyperLogLog {
         }
 
         return est;
+    }
+
+    public byte[] toBytes(){
+        int size = 4 + 1 + regs.length;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+        byteBuffer.putInt(p);
+        byteBuffer.put(bias?(byte) 1:(byte)0);
+        byteBuffer.put(regs);
+        return byteBuffer.array();
+    }
+
+    public static HyperLogLog fromBytes(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        int p = byteBuffer.getInt();
+        boolean bias = byteBuffer.get() == (byte)1;
+        HyperLogLog hll = new HyperLogLog(p, bias);
+        byteBuffer.get(hll.regs);
+        return hll;
+    }
+
+    public String toBase64String(){
+        return StringUtils.encodeBase64String(toBytes());
+    }
+
+    public static HyperLogLog fromBase64String(String str){
+        return fromBytes(StringUtils.decodeBase64(str.getBytes(StandardCharsets.UTF_8)));
     }
 
     private void add(long hashcode) {

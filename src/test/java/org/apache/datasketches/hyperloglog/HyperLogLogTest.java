@@ -3,6 +3,8 @@ package org.apache.datasketches.hyperloglog;
 
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+
 public class HyperLogLogTest {
 
     /**
@@ -62,6 +64,40 @@ public class HyperLogLogTest {
             double percentErr = Math.abs(estimate - n) * 100D / n;
             System.out.println("n:" + n + ",estimate:" + estimate+ ",percentErr:" + percentErr);
         }
+    }
+
+    @Test
+    public void testSer() {
+        HyperLogLog hll = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll.addString(key);
+            hll.addString(key);
+        }
+
+        byte[] bytes = hll.toBytes();
+        HyperLogLog hll2 = HyperLogLog.fromBytes(bytes);
+        System.out.println(hll.getEstimate());
+        System.out.println(hll2.getEstimate());
+        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
+    }
+
+    @Test
+    public void testSerBase64() {
+        HyperLogLog hll = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll.addString(key);
+            hll.addString(key);
+        }
+
+        String base64Str = hll.toBase64String();
+        System.out.println(base64Str);
+        System.out.println(base64Str.length());
+        HyperLogLog hll2 = HyperLogLog.fromBase64String(base64Str);
+        System.out.println(hll.getEstimate());
+        System.out.println(hll2.getEstimate());
+        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
     }
 
 }
