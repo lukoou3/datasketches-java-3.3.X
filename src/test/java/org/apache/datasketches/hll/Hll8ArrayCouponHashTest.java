@@ -11,6 +11,98 @@ import static org.apache.datasketches.hll.HllUtil.*;
 
 public class Hll8ArrayCouponHashTest {
 
+    /**
+     * 12
+     n:1000,estimate:1009,percentErr:0.9
+     n:10000,estimate:10165,percentErr:1.65
+     n:100000,estimate:99662,percentErr:0.338
+     n:10000000,estimate:10075106,percentErr:0.75106
+     n:100000000,estimate:99725738,percentErr:0.274262
+     14
+     n:1000,estimate:992,percentErr:0.8
+     n:10000,estimate:9942,percentErr:0.58
+     n:100000,estimate:100330,percentErr:0.33
+     n:10000000,estimate:9951801,percentErr:0.48199
+     n:100000000,estimate:99566517,percentErr:0.433483
+     16
+     n:1000,estimate:995,percentErr:0.5
+     n:10000,estimate:9968,percentErr:0.32
+     n:100000,estimate:99977,percentErr:0.023
+     n:10000000,estimate:9968780,percentErr:0.3122
+     n:100000000,estimate:99714024,percentErr:0.285976
+     */
+    @Test
+    public void testOtherHashErr() {
+        long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
+
+        for (long n : ns) {
+            Hll8Array hll = new Hll8Array(16);
+            for (int i = 0; i < n; i++) {
+                String key = i + "";
+                long h = XxHash64.hashString(key, 0, key.length(), 0);
+                int coupon = coupon(h);
+                if ((coupon >>> KEY_BITS_26 ) == EMPTY) {
+                    continue;
+                }
+                hll.couponUpdate(coupon);
+                /*final int newValue = coupon >>> KEY_BITS_26;
+                final int configKmask = (1 << hll.lgConfigK) - 1;
+                final int slotNo = coupon & configKmask;
+                hll.updateSlotWithKxQ(slotNo, newValue);*/
+            }
+            long estimate = (long) hll.getEstimate();
+            double percentErr = Math.abs(estimate - n) * 100D / n;
+            System.out.println("n:" + n + ",estimate:" + estimate+ ",percentErr:" + percentErr);
+        }
+    }
+
+    /**
+     * 12
+     n:1000,estimate:1012,percentErr:1.2
+     n:10000,estimate:10309,percentErr:3.09
+     n:100000,estimate:100507,percentErr:0.507
+     n:10000000,estimate:9901109,percentErr:0.98891
+     n:100000000,estimate:100349550,percentErr:0.34955
+     14
+     n:1000,estimate:992,percentErr:0.8
+     n:10000,estimate:9970,percentErr:0.3
+     n:100000,estimate:101022,percentErr:1.022
+     n:10000000,estimate:9896703,percentErr:1.03297
+     n:100000000,estimate:99534273,percentErr:0.465727
+     16
+     n:1000,estimate:997,percentErr:0.3
+     n:10000,estimate:9988,percentErr:0.12
+     n:100000,estimate:100162,percentErr:0.162
+     n:10000000,estimate:9951764,percentErr:0.48236
+     n:100000000,estimate:99138808,percentErr:0.861192
+     */
+    @Test
+    public void testOtherHashNoKxQErr() {
+        long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
+
+        for (long n : ns) {
+            Hll8Array hll = new Hll8Array(16);
+            for (int i = 0; i < n; i++) {
+                String key = i + "";
+                long h = XxHash64.hashString(key, 0, key.length(), 0);
+                int coupon = coupon(h);
+                if ((coupon >>> KEY_BITS_26 ) == EMPTY) {
+                    continue;
+                }
+                //hll.couponUpdate(coupon);
+                final int newValue = coupon >>> KEY_BITS_26;
+                final int configKmask = (1 << hll.lgConfigK) - 1;
+                final int slotNo = coupon & configKmask;
+                hll.updateSlotNoKxQ(slotNo, newValue);
+            }
+            hll.putOutOfOrder(true);
+            checkRebuildCurMinNumKxQ(hll);
+            long estimate = (long) hll.getEstimate();
+            double percentErr = Math.abs(estimate - n) * 100D / n;
+            System.out.println("n:" + n + ",estimate:" + estimate+ ",percentErr:" + percentErr);
+        }
+    }
+
     @Test
     public void test0() {
         Hll8Array hll8 = new Hll8Array(12);

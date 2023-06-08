@@ -36,6 +36,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import org.apache.datasketches.SketchesArgumentException;
+import org.apache.datasketches.hyperloglog.HyperLogLog;
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.testng.annotations.Test;
@@ -47,6 +48,64 @@ import java.util.Set;
  * @author Lee Rhodes
  */
 public class HllSketchTest {
+
+  /**
+   *
+   12
+   HLL_4
+   n:1000,estimate:1001,percentErr:0.1
+   n:10000,estimate:10048,percentErr:0.48
+   n:100000,estimate:98814,percentErr:1.186
+   n:10000000,estimate:10116760,percentErr:1.1676
+   n:100000000,estimate:102405968,percentErr:2.405968
+   HLL_6
+   n:1000,estimate:1001,percentErr:0.1
+   n:10000,estimate:10048,percentErr:0.48
+   n:100000,estimate:98814,percentErr:1.186
+   n:10000000,estimate:10116760,percentErr:1.1676
+   n:100000000,estimate:102405968,percentErr:2.405968
+   HLL_8
+   n:1000,estimate:1001,percentErr:0.1
+   n:10000,estimate:10048,percentErr:0.48
+   n:100000,estimate:98814,percentErr:1.186
+   n:10000000,estimate:10116760,percentErr:1.1676
+   n:100000000,estimate:102405968,percentErr:2.405968
+   14
+   HLL_4
+   n:1000,estimate:1000,percentErr:0.0
+   n:10000,estimate:9976,percentErr:0.24
+   n:100000,estimate:99885,percentErr:0.115
+   n:10000000,estimate:10019023,percentErr:0.19023
+   n:100000000,estimate:99031247,percentErr:0.968753
+   HLL_6
+   n:1000,estimate:1000,percentErr:0.0
+   n:10000,estimate:9976,percentErr:0.24
+   n:100000,estimate:99885,percentErr:0.115
+   n:10000000,estimate:10019023,percentErr:0.19023
+   n:100000000,estimate:99031247,percentErr:0.968753
+   HLL_8
+   n:1000,estimate:1000,percentErr:0.0
+   n:10000,estimate:9976,percentErr:0.24
+   n:100000,estimate:99885,percentErr:0.115
+   n:10000000,estimate:10019023,percentErr:0.19023
+   n:100000000,estimate:99031247,percentErr:0.968753
+   */
+  @Test
+  public void testErr() {
+    long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
+
+    for (long n : ns) {
+      HllSketch sketch = new HllSketch(14, TgtHllType.HLL_8);
+      for (int i = 0; i < n; i++) {
+        String key = i + "";
+        sketch.update(key);
+        sketch.update(key);
+      }
+      long estimate = (long) sketch.getEstimate();
+      double percentErr = Math.abs(estimate - n) * 100D / n;
+      System.out.println("n:" + n + ",estimate:" + estimate+ ",percentErr:" + percentErr);
+    }
+  }
 
   @Test
   public void test() {

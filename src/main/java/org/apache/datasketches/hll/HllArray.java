@@ -90,6 +90,7 @@ abstract class HllArray extends AbstractHllArray {
   }
 
   static final HllArray newHeapHll(final int lgConfigK, final TgtHllType tgtHllType) {
+    // lgConfigK是不会变的，只是底层数组大小不同
     if (tgtHllType == HLL_4) { return new Hll4Array(lgConfigK); }
     if (tgtHllType == HLL_6) { return new Hll6Array(lgConfigK); }
     return new Hll8Array(lgConfigK);
