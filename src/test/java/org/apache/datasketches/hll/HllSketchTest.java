@@ -89,13 +89,20 @@ public class HllSketchTest {
    n:100000,estimate:99885,percentErr:0.115
    n:10000000,estimate:10019023,percentErr:0.19023
    n:100000000,estimate:99031247,percentErr:0.968753
+
+   16
+   n:1000,estimate:1000,percentErr:0.0
+   n:10000,estimate:10022,percentErr:0.22
+   n:100000,estimate:99801,percentErr:0.199
+   n:10000000,estimate:10014539,percentErr:0.14539
+   n:100000000,estimate:99953775,percentErr:0.046225
    */
   @Test
   public void testErr() {
     long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
 
     for (long n : ns) {
-      HllSketch sketch = new HllSketch(14, TgtHllType.HLL_8);
+      HllSketch sketch = new HllSketch(16, TgtHllType.HLL_8);
       for (int i = 0; i < n; i++) {
         String key = i + "";
         sketch.update(key);

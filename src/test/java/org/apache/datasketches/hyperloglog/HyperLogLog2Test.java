@@ -1,60 +1,55 @@
 package org.apache.datasketches.hyperloglog;
 
-
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-
-public class HyperLogLogTest {
+public class HyperLogLog2Test {
 
     /**
-     *
-     *
-     12
+     * 12
      n:1000,estimate:1012,percentErr:1.2
-     n:10000,estimate:10425,percentErr:4.25
-     n:100000,estimate:102387,percentErr:2.387
-     n:10000000,estimate:10063980,percentErr:0.6398
-     n:100000000,estimate:97723304,percentErr:2.276696
+     n:10000,estimate:10551,percentErr:5.51
+     n:100000,estimate:100502,percentErr:0.502
+     n:10000000,estimate:9900555,percentErr:0.99445
+     n:100000000,estimate:100343935,percentErr:0.343935
      true
      n:1000,estimate:1012,percentErr:1.2
-     n:10000,estimate:10181,percentErr:1.81
-     n:100000,estimate:102387,percentErr:2.387
-     n:10000000,estimate:10063980,percentErr:0.6398
-     n:100000000,estimate:97723304,percentErr:2.276696
-
+     n:10000,estimate:10314,percentErr:3.14
+     n:100000,estimate:100502,percentErr:0.502
+     n:10000000,estimate:9900555,percentErr:0.99445
+     n:100000000,estimate:100343935,percentErr:0.343935
 
      14
      n:1000,estimate:992,percentErr:0.8
      n:10000,estimate:9971,percentErr:0.29
-     n:100000,estimate:100099,percentErr:0.099
-     n:10000000,estimate:9960392,percentErr:0.39608
-     n:100000000,estimate:98343379,percentErr:1.656621
+     n:100000,estimate:101019,percentErr:1.019
+     n:10000000,estimate:9896125,percentErr:1.03875
+     n:100000000,estimate:99528463,percentErr:0.471537
 
      n:1000,estimate:992,percentErr:0.8
      n:10000,estimate:9971,percentErr:0.29
-     n:100000,estimate:100099,percentErr:0.099
-     n:10000000,estimate:9960392,percentErr:0.39608
-     n:100000000,estimate:98343379,percentErr:1.656621
+     n:100000,estimate:101019,percentErr:1.019
+     n:10000000,estimate:9896125,percentErr:1.03875
+     n:100000000,estimate:99528463,percentErr:0.471537
 
      16
      n:1000,estimate:998,percentErr:0.2
      n:10000,estimate:9989,percentErr:0.11
      n:100000,estimate:100154,percentErr:0.154
-     n:10000000,estimate:9977524,percentErr:0.22476
-     n:100000000,estimate:99486087,percentErr:0.513913
+     n:10000000,estimate:9951207,percentErr:0.48793
+     n:100000000,estimate:99133255,percentErr:0.866745
 
      n:1000,estimate:998,percentErr:0.2
      n:10000,estimate:9989,percentErr:0.11
-     n:100000,estimate:100353,percentErr:0.353
-     n:10000000,estimate:9977524,percentErr:0.22476
-     n:100000000,estimate:99486087,percentErr:0.513913
+     n:100000,estimate:100349,percentErr:0.349
+     n:10000000,estimate:9951207,percentErr:0.48793
+     n:100000000,estimate:99133255,percentErr:0.866745
+     *
      */
     @Test
     public void test() {
         long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
         for (long n : ns) {
-            HyperLogLog hll = new HyperLogLog(16, true);
+            HyperLogLog2 hll = new HyperLogLog2(16, true);
             for (int i = 0; i < n; i++) {
                 String key = i + "";
                 hll.addString(key);
@@ -67,49 +62,15 @@ public class HyperLogLogTest {
     }
 
     @Test
-    public void testSer() {
-        HyperLogLog hll = new HyperLogLog(12, true);
-        for (int i = 0; i < 10000000; i++) {
-            String key = i + "";
-            hll.addString(key);
-            hll.addString(key);
-        }
-
-        byte[] bytes = hll.toBytes();
-        HyperLogLog hll2 = HyperLogLog.fromBytes(bytes);
-        System.out.println(hll.getEstimate());
-        System.out.println(hll2.getEstimate());
-        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
-    }
-
-    @Test
-    public void testSerBase64() {
-        HyperLogLog hll = new HyperLogLog(12, true);
-        for (int i = 0; i < 10000000; i++) {
-            String key = i + "";
-            hll.addString(key);
-            hll.addString(key);
-        }
-
-        String base64Str = hll.toBase64String();
-        System.out.println(base64Str);
-        System.out.println(base64Str.length());
-        HyperLogLog hll2 = HyperLogLog.fromBase64String(base64Str);
-        System.out.println(hll.getEstimate());
-        System.out.println(hll2.getEstimate());
-        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
-    }
-
-    @Test
     public void testMerge() {
-        HyperLogLog hll1 = new HyperLogLog(12, true);
+        HyperLogLog2 hll1 = new HyperLogLog2(12, true);
         for (int i = 0; i < 10000000; i++) {
             String key = i + "";
             hll1.addString(key);
             hll1.addString(key);
         }
 
-        HyperLogLog hll2 = new HyperLogLog(12, true);
+        HyperLogLog2 hll2 = new HyperLogLog2(12, true);
         for (int i = 0; i < 10000000; i++) {
             String key = i + "a";
             hll2.addString(key);
@@ -125,15 +86,14 @@ public class HyperLogLogTest {
 
     @Test
     public void testMerge2() {
-
-        HyperLogLog hll1 = new HyperLogLog(12, true);
+        HyperLogLog2 hll1 = new HyperLogLog2(12, true);
         for (int i = 0; i < 10000000; i++) {
             String key = i + "";
             hll1.addString(key);
             hll1.addString(key);
         }
 
-        HyperLogLog hll2 = new HyperLogLog(14, true);
+        HyperLogLog2 hll2 = new HyperLogLog2(14, true);
         for (int i = 0; i < 10000000; i++) {
             String key = i + "a";
             hll2.addString(key);
@@ -147,5 +107,27 @@ public class HyperLogLogTest {
 
     }
 
+    @Test
+    public void testMerge3() {
+        HyperLogLog2 hll1 = new HyperLogLog2(14, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll1.addString(key);
+            hll1.addString(key);
+        }
+
+        HyperLogLog2 hll2 = new HyperLogLog2(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "a";
+            hll2.addString(key);
+            hll2.addString(key);
+        }
+
+        System.out.println(hll1.getEstimate());
+        System.out.println(hll2.getEstimate());
+        hll1.merge(hll2);
+        System.out.println(hll1.getEstimate());
+
+    }
 
 }

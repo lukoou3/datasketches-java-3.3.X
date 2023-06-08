@@ -558,7 +558,7 @@ public class Hll8ArrayCouponHashTest {
 
     @Test
     public void testOtherHashMergeUseBuildIn() {
-        Hll8Array hll8 = new Hll8Array(12);
+        Hll8Array hll8 = new Hll8Array(14);
 
         for (int i = 0; i < 1500000; i++){
             String key = i + "a";
@@ -575,7 +575,7 @@ public class Hll8ArrayCouponHashTest {
             //hll8.updateSlotWithKxQ(slotNo, newValue);
         }
 
-        Hll8Array hll82 = new Hll8Array(14);
+        Hll8Array hll82 = new Hll8Array(12);
         for (int i = 0; i < 1000000; i++){
             String key = i + "";
             long h = XxHash64.hashString(key, 0, key.length(), 0);
@@ -591,7 +591,7 @@ public class Hll8ArrayCouponHashTest {
             //hll82.updateSlotWithKxQ(slotNo, newValue);
         }
 
-        for (int i = 0; i < 1000000; i++){
+        /*for (int i = 0; i < 1000000; i++){
             String key = i + "a";
             long h = XxHash64.hashString(key, 0, key.length(), 0);
             int coupon = coupon(h);
@@ -604,7 +604,7 @@ public class Hll8ArrayCouponHashTest {
             final int slotNo = coupon & configKmask;
             hll82.updateSlotNoKxQ(slotNo, newValue);
             //hll8.updateSlotWithKxQ(slotNo, newValue);
-        }
+        }*/
 
         HllSketch sketch1 = new HllSketch(hll8.lgConfigK, TgtHllType.HLL_8);
         sketch1.hllSketchImpl = hll8;

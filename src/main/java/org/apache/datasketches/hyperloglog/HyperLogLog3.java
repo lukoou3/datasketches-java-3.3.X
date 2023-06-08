@@ -9,8 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-// hll标准实现
-public class HyperLogLog {
+import static org.apache.datasketches.Util.DEFAULT_UPDATE_SEED;
+import org.apache.datasketches.hash.MurmurHash3;
+
+// add、merge方法不同
+public class HyperLogLog3 {
     int p; // number of register bits
     int m; // m = 2^p
     byte[] regs; // 2^p number of bytes for register
@@ -19,11 +22,11 @@ public class HyperLogLog {
     public static double[] inversePow2Data = IntStream.rangeClosed(0, Byte.MAX_VALUE).mapToDouble(v -> Math.pow
             (2, -v)).toArray();
 
-    public HyperLogLog(int precision) {
+    public HyperLogLog3(int precision) {
         this(precision, true);
     }
 
-    public HyperLogLog(int precision,boolean bias) {
+    public HyperLogLog3(int precision, boolean bias) {
         if (precision > 18 || precision < 4) {
             throw new RuntimeException("precision");
         }
@@ -34,8 +37,8 @@ public class HyperLogLog {
     }
 
     public void addString(String val) {
-        long h = XxHash64.hashString(val, 0, val.length(), 0);
-        add(h);
+        long[] hash = MurmurHash3.hash(val.getBytes(StandardCharsets.UTF_8), DEFAULT_UPDATE_SEED);
+        add(hash);
     }
 
     public long getEstimate() {
@@ -80,11 +83,11 @@ public class HyperLogLog {
         return byteBuffer.array();
     }
 
-    public static HyperLogLog fromBytes(byte[] bytes) {
+    public static HyperLogLog3 fromBytes(byte[] bytes) {
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         int p = byteBuffer.getInt();
         boolean bias = byteBuffer.get() == (byte)1;
-        HyperLogLog hll = new HyperLogLog(p, bias);
+        HyperLogLog3 hll = new HyperLogLog3(p, bias);
         byteBuffer.get(hll.regs);
         return hll;
     }
@@ -93,61 +96,65 @@ public class HyperLogLog {
         return StringUtils.encodeBase64String(toBytes());
     }
 
-    public static HyperLogLog fromBase64String(String str){
+    public static HyperLogLog3 fromBase64String(String str){
         return fromBytes(StringUtils.decodeBase64(str.getBytes(StandardCharsets.UTF_8)));
     }
 
-    public void merge(HyperLogLog hll){
-        if (p > hll.p) {
-            throw new IllegalArgumentException(
-                    "HyperLogLog cannot merge a smaller p into a larger one : "
-                            + toString() + " Provided: " + hll.toString());
-        }
-
+    public void merge(HyperLogLog3 hll){
         if (p < hll.p) {
-            // invariant: p > hll.p
-            hll = hll.squash(p);
-        }
+            //src > gdt
+            final int tgtKmask = (1 << this.p) - 1;
+            final byte[] srcRegs = hll.regs;
+            final byte[] tgtRegs = this.regs;
+            for (int i = 0; i < hll.m; i++) {
+                final byte srcV = srcRegs[i];
+                final int j = i & tgtKmask;
+                final byte tgtV = tgtRegs[j];
+                tgtRegs[j] = (srcV > tgtV) ? srcV : tgtV;
+            }
+        }else{
+            if (p > hll.p) {
+                // src <  gdt
+                downsample(hll.p);
+            }
 
-        final byte[] srcRegs = hll.regs;
-        final byte[] tgtRegs = this.regs;
-        for (int i = 0; i < hll.m; i++) {
-            final byte srcV = srcRegs[i];
-            final byte tgtV = tgtRegs[i];
-            tgtRegs[i] = (srcV > tgtV) ? srcV : tgtV;
+            final byte[] srcRegs = hll.regs;
+            final byte[] tgtRegs = this.regs;
+            for (int i = 0; i < hll.m; i++) {
+                final byte srcV = srcRegs[i];
+                final byte tgtV = tgtRegs[i];
+                tgtRegs[i] = (srcV > tgtV) ? srcV : tgtV;
+            }
         }
     }
 
-    public HyperLogLog squash(final int p0) {
-        if (p0 > p) {
-            throw new IllegalArgumentException(
-                    "HyperLogLog cannot be be squashed to be bigger. Current: "
-                            + toString() + " Provided: " + p0);
-        }
-
-        if (p0 == p) {
-            return this;
-        }
-
-        final HyperLogLog dest = new HyperLogLog(p0, bias);
-
-        for (int idx = 0; idx < regs.length; idx++) {
-            byte lr = regs[idx]; // this can be a max of 65, never > 127
-            if (lr != 0) {
-                dest.add((1L << (p + lr - 1)) | idx);
+    private void downsample( final int p) {
+        int newP = p;
+        int newM = 1 << newP;
+        final byte[] newRegs = new byte[newM];
+        for (int i = 0; i < regs.length; i++) {
+            byte value = regs[i];
+            if(value > 0){
+                int slotNo = i & (newM - 1);
+                if(value > newRegs[slotNo]){
+                    newRegs[slotNo] = value;
+                }
             }
         }
 
-        return dest;
+        this.p = newP;
+        this.m = newM;
+        this.regs = newRegs;
     }
 
-    private void add(long hashcode) {
-        // LSB p bits
-        final int i = (int) (hashcode & (m - 1));
-        // MSB 64 - p bits
-        final long w = hashcode >>> p;
-        // longest run of trailing zeroes
-        final int lr = Long.numberOfTrailingZeros(w) + 1;
+    // 就是这个方法不一样
+    private void add(final long[] hash) {
+        final int i = (int) (hash[0] & (m - 1));
+        int lr = Long.numberOfLeadingZeros(hash[1]) + 1;
+        // 没影响
+        /*if(lr > 63){
+            lr = 63;
+        }*/
         final byte zeroBits = (byte) lr;
         if(zeroBits > regs[i]){
             regs[i] = zeroBits;
