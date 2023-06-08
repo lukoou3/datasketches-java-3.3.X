@@ -319,6 +319,170 @@ public class Hll8ArrayCouponHashTest {
         System.out.println("sompositeEstimate"+ hll8.getCompositeEstimate());
     }
 
+    @Test
+    public void testOtherHash2() {
+        Hll8Array hll8 = new Hll8Array(12);
+        int m = 1 << hll8.lgConfigK;
+
+        for (int i = 0; i < 10000000; i++){
+            String key = i + "a";
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll8.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll8.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        System.out.println(hll8.toString());
+        System.out.println("size:" + hll8.toCompactByteArray().length);
+        System.out.println("###################");
+        System.out.println("estimate"+ hll8.getEstimate());
+        System.out.println("sompositeEstimate"+ hll8.getCompositeEstimate());
+    }
+
+    @Test
+    public void testOtherHashMerge2() {
+        Hll8Array hll8 = new Hll8Array(12);
+
+        for (int i = 0; i < 1500000; i++){
+            String key = i + "a";
+            int m = 1 << hll8.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll8.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll8.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        Hll8Array hll82 = new Hll8Array(12);
+        for (int i = 0; i < 1000000; i++){
+            String key = i + "";
+            int m = 1 << hll82.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll82.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll82.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        for (int i = 0; i < 1000000; i++){
+            String key = i + "a";
+            int m = 1 << hll82.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll82.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll82.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        final int srcK = 1 << hll82.lgConfigK;
+        final byte[] srcArr = hll82.hllByteArr;
+        final byte[] tgtArr = hll8.hllByteArr;
+        for (int i = 0; i < srcK; i++) {
+            final byte srcV = srcArr[i];
+            final byte tgtV = tgtArr[i];
+            tgtArr[i] = (srcV > tgtV) ? srcV : tgtV;
+        }
+
+        checkRebuildCurMinNumKxQ(hll8);
+        hll8.putOutOfOrder(true);
+
+        System.out.println(hll8.toString());
+        System.out.println("size:" + hll8.toCompactByteArray().length);
+        System.out.println("###################");
+        System.out.println("estimate"+ hll8.getEstimate());
+        System.out.println("sompositeEstimate"+ hll8.getCompositeEstimate());
+    }
+
+    /**
+     * 两个lgConfigK必须相同，否则不行，相当于多种hash
+     * 内置的实现，读取的是固定的最多62位的0
+     */
+    @Test
+    public void testOtherHashMerge2UseBuildIn() {
+        Hll8Array hll8 = new Hll8Array(12);
+
+        for (int i = 0; i < 1500000; i++){
+            String key = i + "a";
+            int m = 1 << hll8.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll8.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll8.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        Hll8Array hll82 = new Hll8Array(14);
+        for (int i = 0; i < 1000000; i++){
+            String key = i + "";
+            int m = 1 << hll82.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll82.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll82.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        for (int i = 0; i < 1000000; i++){
+            String key = i + "a";
+            int m = 1 << hll82.lgConfigK;
+            long h = XxHash64.hashString(key, 0, key.length(), 0);
+            final int slotNo = (int) (h & (m - 1));
+            final long w = h >>> hll82.lgConfigK;
+            final int lr = Long.numberOfTrailingZeros(w) + 1;
+            if (w == EMPTY) {
+                continue;
+            }
+            final int newValue = lr;
+            hll82.updateSlotWithKxQ(slotNo, newValue);
+        }
+
+        HllSketch sketch1 = new HllSketch(hll8.lgConfigK, TgtHllType.HLL_8);
+        sketch1.hllSketchImpl = hll8;
+        HllSketch sketch2 = new HllSketch(hll82.lgConfigK, TgtHllType.HLL_8);
+        sketch2.hllSketchImpl = hll82;
+
+        // 这里会下采样，按照最小的算
+        Union union = new Union(14);
+        union.update(sketch1);
+        union.update(sketch2);
+        HllSketch sketch = union.getResult();
+
+        System.out.println(sketch.toString());
+        System.out.println("size:" + sketch.toCompactByteArray().length);
+        System.out.println("###################");
+        System.out.println("estimate"+ sketch.getEstimate());
+        System.out.println("err"+ (sketch.getEstimate() - 2500000) / 2500000D);
+
+        System.out.println("**********************");
+
+
+    }
+
     /**
      * 不行，hash不同会认为是不同的值
      */
@@ -394,7 +558,7 @@ public class Hll8ArrayCouponHashTest {
 
     @Test
     public void testOtherHashMergeUseBuildIn() {
-        Hll8Array hll8 = new Hll8Array(14);
+        Hll8Array hll8 = new Hll8Array(12);
 
         for (int i = 0; i < 1500000; i++){
             String key = i + "a";
@@ -411,7 +575,7 @@ public class Hll8ArrayCouponHashTest {
             //hll8.updateSlotWithKxQ(slotNo, newValue);
         }
 
-        Hll8Array hll82 = new Hll8Array(12);
+        Hll8Array hll82 = new Hll8Array(14);
         for (int i = 0; i < 1000000; i++){
             String key = i + "";
             long h = XxHash64.hashString(key, 0, key.length(), 0);

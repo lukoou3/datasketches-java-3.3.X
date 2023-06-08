@@ -100,4 +100,52 @@ public class HyperLogLogTest {
         System.out.println(Arrays.equals(hll.regs, hll2.regs) );
     }
 
+    @Test
+    public void testMerge() {
+        HyperLogLog hll1 = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll1.addString(key);
+            hll1.addString(key);
+        }
+
+        HyperLogLog hll2 = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "a";
+            hll2.addString(key);
+            hll2.addString(key);
+        }
+
+        System.out.println(hll1.getEstimate());
+        System.out.println(hll2.getEstimate());
+        hll1.merge(hll2);
+        System.out.println(hll1.getEstimate());
+
+    }
+
+    @Test
+    public void testMerge2() {
+
+        HyperLogLog hll1 = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll1.addString(key);
+            hll1.addString(key);
+        }
+
+        HyperLogLog hll2 = new HyperLogLog(12, true);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "a";
+            hll2.addString(key);
+            hll2.addString(key);
+        }
+
+        System.out.println(hll1.getEstimate());
+        System.out.println(hll2.getEstimate());
+        hll1.merge(hll2);
+        System.out.println(hll1.getEstimate());
+
+    }
+
+
 }

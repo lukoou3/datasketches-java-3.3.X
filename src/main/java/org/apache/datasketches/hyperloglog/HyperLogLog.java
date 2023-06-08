@@ -96,6 +96,50 @@ public class HyperLogLog {
         return fromBytes(StringUtils.decodeBase64(str.getBytes(StandardCharsets.UTF_8)));
     }
 
+    public void merge(HyperLogLog hll){
+        if (p > hll.p) {
+            throw new IllegalArgumentException(
+                    "HyperLogLog cannot merge a smaller p into a larger one : "
+                            + toString() + " Provided: " + hll.toString());
+        }
+
+        if (p < hll.p) {
+            // invariant: p > hll.p
+            hll = hll.squash(p);
+        }
+
+        final byte[] srcRegs = hll.regs;
+        final byte[] tgtRegs = this.regs;
+        for (int i = 0; i < hll.m; i++) {
+            final byte srcV = srcRegs[i];
+            final byte tgtV = tgtRegs[i];
+            tgtRegs[i] = (srcV > tgtV) ? srcV : tgtV;
+        }
+    }
+
+    public HyperLogLog squash(final int p0) {
+        if (p0 > p) {
+            throw new IllegalArgumentException(
+                    "HyperLogLog cannot be be squashed to be bigger. Current: "
+                            + toString() + " Provided: " + p0);
+        }
+
+        if (p0 == p) {
+            return this;
+        }
+
+        final HyperLogLog dest = new HyperLogLog(p0, bias);
+
+        for (int idx = 0; idx < regs.length; idx++) {
+            byte lr = regs[idx]; // this can be a max of 65, never > 127
+            if (lr != 0) {
+                dest.add((1L << (p + lr - 1)) | idx);
+            }
+        }
+
+        return dest;
+    }
+
     private void add(long hashcode) {
         // LSB p bits
         final int i = (int) (hashcode & (m - 1));
