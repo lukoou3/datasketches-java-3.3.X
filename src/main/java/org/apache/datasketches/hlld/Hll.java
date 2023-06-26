@@ -2,9 +2,11 @@ package org.apache.datasketches.hlld;
 
 import it.unimi.dsi.fastutil.doubles.Double2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
-import org.apache.datasketches.hyperloglog.HyperLogLog;
+import org.apache.datasketches.hyperloglog.StringUtils;
 import org.apache.datasketches.memory.internal.XxHash64;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.apache.datasketches.hlld.HllConstants.*;
@@ -74,14 +76,6 @@ public class Hll {
         // Store the word
         regs[i] = (word & ~val_mask) | val;
     }
-
-    /*public void merge(Hll hll){
-        if (p != hll.p) {
-            throw new IllegalArgumentException(
-                    "HyperLogLog cannot merge a smaller p into a larger one : "
-                            + p + " Provided: " + hll.p);
-        }
-    }*/
 
     public double size() {
         RawEstAndNumZeros estAndNumZeros = rawEstimate();
@@ -177,6 +171,14 @@ public class Hll {
         return Math.round(reg * Math.log(reg / ((double) numZeros)));
     }
 
+    // p, 64 - p
+    // +-------------|-------------+
+    // |1000000000000|000000001xxxx|  (lr=9 + idx=1024)
+    // +-------------|-------------+
+    //                \
+    // +---------------|-----------+
+    // |00000000000|01000000001xxxx|  (lr=2 + idx=0)
+    // +---------------|-----------+
     public Hll squash(final int p0) {
         if (p0 > p) {
             throw new IllegalArgumentException(
@@ -190,14 +192,6 @@ public class Hll {
 
         final Hll dest = new Hll(p0);
 
-        // p, 64 - p
-        // +-------------|-------------+
-        // |1000000000000|000000001xxxx|  (lr=9 + idx=1024)
-        // +-------------|-------------+
-        //                \
-        // +---------------|-----------+
-        // |00000000000|01000000001xxxx|  (lr=2 + idx=0)
-        // +---------------|-----------+
         for (int idx = 0; idx < reg; idx++) {
             int regVal = getRegister(idx); // this can be a max of 65, never > 127
             if (regVal != 0) {
@@ -206,6 +200,45 @@ public class Hll {
         }
 
         return dest;
+    }
+
+    public static final int getSerializationBytes(final int precision){
+        int reg = 1 << precision;
+        int words = (reg + REG_PER_WORD - 1) / REG_PER_WORD;
+        return 1 + words * 4;
+    }
+
+    public byte[] toBytes() {
+        int size = 1 + regs.length * 4;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+        byteBuffer.put((byte)p);
+        for (int i = 0; i < regs.length; i++) {
+            byteBuffer.putInt(regs[i]);
+        }
+        return byteBuffer.array();
+    }
+
+    public static Hll fromBytes(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        return fromByteBuffer(byteBuffer);
+    }
+
+    public static Hll fromByteBuffer(ByteBuffer byteBuffer) {
+        int p = byteBuffer.get();
+        Hll hll = new Hll(p);
+        int len = hll.regs.length;
+        for (int i = 0; i < len; i++) {
+            hll.regs[i] = byteBuffer.getInt();
+        }
+        return hll;
+    }
+
+    public String toBase64String(){
+        return StringUtils.encodeBase64String(toBytes());
+    }
+
+    public static Hll fromBase64String(String str){
+        return fromBytes(StringUtils.decodeBase64(str.getBytes(StandardCharsets.UTF_8)));
     }
 
     static class RawEstAndNumZeros {

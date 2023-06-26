@@ -4,6 +4,8 @@ package org.apache.datasketches.hlld;
 import org.apache.datasketches.memory.internal.XxHash64;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+
 public class HllTest {
 
     /**
@@ -148,6 +150,39 @@ public class HllTest {
 
     }
 
+    @Test
+    public void testSer() {
+        Hll hll = new Hll(12);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll.addString(key);
+        }
+
+        byte[] bytes = hll.toBytes();
+        Hll hll2 = Hll.fromBytes(bytes);
+        System.out.println(hll.size());
+        System.out.println(hll2.size());
+        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
+    }
+
+    @Test
+    public void testSerBase64() {
+        Hll hll = new Hll(12);
+        for (int i = 0; i < 10000000; i++) {
+            String key = i + "";
+            hll.addString(key);
+        }
+
+        String base64Str = hll.toBase64String();
+        System.out.println(base64Str);
+        System.out.println(hll.regs.length * 4);
+        System.out.println(Hll.getSerializationBytes(12));
+        System.out.println(base64Str.length());
+        Hll hll2 = Hll.fromBase64String(base64Str);
+        System.out.println(hll.size());
+        System.out.println(hll2.size());
+        System.out.println(Arrays.equals(hll.regs, hll2.regs) );
+    }
 
     @Test
     public void testSquash2() {
