@@ -40,6 +40,15 @@ class Hll6Array extends HllArray {
    */
   Hll6Array(final int lgConfigK) {
     super(lgConfigK, TgtHllType.HLL_6);
+    /**
+     * 就是用6个字节储存值，节省内存。
+     * 计算方式1
+     * numSlots = 1 << 12
+     * ((numSlots * 3) >>> 2) + 1 = numSlots * 3/ 4 + 1
+     * 计算方式2
+     * numSlots = 1 << 12
+     * numSlots * 6/ 8 + 1 = numSlots * 3/ 4 + 1
+     */
     hllByteArr = new byte[hll6ArrBytes(lgConfigK)];
   }
 
@@ -113,6 +122,7 @@ class Hll6Array extends HllArray {
     }
   }
 
+  // 更新对应索引的值，每6个bit一个值
   //on-heap
   private static final void put6Bit(final byte[] arr, final int offsetBytes, final int slotNo,
       final int newValue) {
@@ -125,6 +135,7 @@ class Hll6Array extends HllArray {
     putShortLE(arr, byteIdx, insert);
   }
 
+  // 获取对应索引的值，每6个bit一个值
   //on-heap
   private static final int get6Bit(final byte[] arr, final int offsetBytes, final int slotNo) {
     final int startBit = slotNo * 6;

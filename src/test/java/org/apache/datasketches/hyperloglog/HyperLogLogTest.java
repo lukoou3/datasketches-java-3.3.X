@@ -37,6 +37,13 @@ public class HyperLogLogTest {
      n:10000000,estimate:9960392,percentErr:0.39608
      n:100000000,estimate:98343379,percentErr:1.656621
 
+     15
+     n:1000,estimate:998,percentErr:0.2
+     n:10000,estimate:9971,percentErr:0.29
+     n:100000,estimate:101062,percentErr:1.062
+     n:10000000,estimate:10019741,percentErr:0.19741
+     n:100000000,estimate:99141122,percentErr:0.858878
+
      16
      n:1000,estimate:998,percentErr:0.2
      n:10000,estimate:9989,percentErr:0.11
@@ -54,7 +61,7 @@ public class HyperLogLogTest {
     public void test() {
         long[] ns = new long[]{1000, 10000, 100000, 10000000, 100000000};
         for (long n : ns) {
-            HyperLogLog hll = new HyperLogLog(16, true);
+            HyperLogLog hll = new HyperLogLog(15, true);
             for (int i = 0; i < n; i++) {
                 String key = i + "";
                 hll.addString(key);
@@ -111,6 +118,7 @@ public class HyperLogLogTest {
 
         HyperLogLog hll2 = new HyperLogLog(12, true);
         for (int i = 0; i < 10000000; i++) {
+            //String key = i + "" ;
             String key = i + "a";
             hll2.addString(key);
             hll2.addString(key);
@@ -135,7 +143,8 @@ public class HyperLogLogTest {
 
         HyperLogLog hll2 = new HyperLogLog(14, true);
         for (int i = 0; i < 10000000; i++) {
-            String key = i + "a";
+            String key = i + "" ;
+            //String key = i + "a";
             hll2.addString(key);
             hll2.addString(key);
         }
