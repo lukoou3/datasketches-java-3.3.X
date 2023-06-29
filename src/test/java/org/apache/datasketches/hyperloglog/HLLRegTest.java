@@ -3,6 +3,8 @@ package org.apache.datasketches.hyperloglog;
 import org.apache.datasketches.memory.internal.XxHash64;
 import org.testng.annotations.Test;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.datasketches.ByteArrayUtil.*;
@@ -212,6 +214,8 @@ public class HLLRegTest {
 
         System.out.println("###############");
     }
+
+
 
     /*
 static int get_register(hll_t *h, int idx) {

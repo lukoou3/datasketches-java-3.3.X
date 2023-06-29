@@ -53,9 +53,11 @@ class DirectHll8Array extends DirectHllArray {
   HllSketchImpl couponUpdate(final int coupon) {
     if (wmem == null) { noWriteAccess(); }
     final int newValue = HllUtil.getPairValue(coupon);
+    // getLgConfigK()从字节数组中取值
     final int configKmask = (1 << getLgConfigK()) - 1;
     final int slotNo = HllUtil.getPairLow26(coupon) & configKmask;
 
+    // 在固定字节位置更新
     updateSlotWithKxQ(slotNo, newValue);
     return this;
   }

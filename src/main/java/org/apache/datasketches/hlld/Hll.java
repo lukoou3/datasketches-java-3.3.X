@@ -21,6 +21,7 @@ public class Hll {
     static final int HLL_MAX_PRECISION = 18; // 262,144 registers
     static final int REG_WIDTH = 6; // Bits per register
     static final int REG_PER_WORD = 5; // floor(INT_WIDTH / REG_WIDTH)
+    static final long DEFAULT_HASH_SEED = 0L; // 9001L
 
     int p; // precision, number of register bits
     int reg; // reg = 2^p
@@ -42,8 +43,8 @@ public class Hll {
         this.regs = new int[words];
     }
 
-    public void addString(String val) {
-        long h = XxHash64.hashString(val, 0, val.length(), 0);
+    public void add(String val) {
+        long h = XxHash64.hashString(val, 0, val.length(), DEFAULT_HASH_SEED);
         addHash(h);
     }
 
@@ -61,8 +62,13 @@ public class Hll {
     }
 
     public int getRegister(int idx) {
+        int i = idx / REG_PER_WORD;
         int word = regs[idx / REG_PER_WORD];
         word = word >>> (REG_WIDTH * (idx % REG_PER_WORD));
+        if(i == 151 || i == 171 || i == 201){
+            int r = word & ((1 << REG_WIDTH) - 1);
+            r = r + 0;
+        }
         return word & ((1 << REG_WIDTH) - 1);
     }
 
@@ -225,6 +231,7 @@ public class Hll {
 
     public static Hll fromByteBuffer(ByteBuffer byteBuffer) {
         int p = byteBuffer.get();
+        System.out.println("version:" +  byteBuffer.get());
         Hll hll = new Hll(p);
         int len = hll.regs.length;
         for (int i = 0; i < len; i++) {

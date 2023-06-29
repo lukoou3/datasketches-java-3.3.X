@@ -63,15 +63,16 @@ final class KllHeapFloatsSketch extends KllFloatsSketch {
     super(null, null);
     KllHelper.checkM(m);
     KllHelper.checkK(k, m);
-    this.k_ = k;
-    this.m_ = m;
-    n_ = 0;
-    minK_ = k;
+    this.k_ = k; // k_ = 200
+    this.m_ = m; // m_ = 8
+    n_ = 0; // n_ = 0
+    minK_ = k; // minK_ = 200
     isLevelZeroSorted_ = false;
     levelsArr = new int[] {k, k};
     minFloatValue_ = Float.NaN;
     maxFloatValue_ = Float.NaN;
-    floatItems_ = new float[k];
+    // 数据信息在levelsArr和floatItems_，当levelsArr[0]容量满了时会向上压缩数据, 看update代码逻辑
+    floatItems_ = new float[k]; // 200 len
   }
 
   /**

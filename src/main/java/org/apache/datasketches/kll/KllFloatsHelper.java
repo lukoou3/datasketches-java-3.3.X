@@ -302,7 +302,10 @@ final class KllFloatsHelper {
     final float prevMax = mine.getMaxFloatValue();
     mine.setMinFloatValue(resolveFloatMinValue(prevMin, value));
     mine.setMaxFloatValue(resolveFloatMaxValue(prevMax, value));
-    if (mine.getLevelsArray()[0] == 0) { KllHelper.compressWhileUpdatingSketch(mine); }
+    // 当LevelsArray 0满了时，向上压缩数据
+    if (mine.getLevelsArray()[0] == 0) {
+      KllHelper.compressWhileUpdatingSketch(mine);
+    }
     final int myLevelsArrAtZero = mine.getLevelsArray()[0]; //LevelsArr could be expanded
     mine.incN();
     mine.setLevelZeroSorted(false);
