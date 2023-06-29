@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
 import org.apache.datasketches.hyperloglog.StringUtils;
 import org.apache.datasketches.memory.internal.XxHash64;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -15,7 +16,7 @@ import static org.apache.datasketches.hlld.HllConstants.*;
  * c语言HyperLogLog版本hlld转换为java实现
  * https://github.com/armon/hlld/tree/master
  */
-public class Hll {
+public class Hll implements Serializable {
     static final int DEFAULT_PRECISION = 12;
     static final int HLL_MIN_PRECISION = 4; // 16 registers
     static final int HLL_MAX_PRECISION = 18; // 262,144 registers
@@ -43,12 +44,32 @@ public class Hll {
         this.regs = new int[words];
     }
 
+    public void add(long val) {
+        final long[] data = { val };
+        long h = XxHash64.hashLongs(data, 0, data.length, DEFAULT_HASH_SEED);
+        addHash(h);
+    }
+
+    public void add(double val) {
+        final double[] data = { val };
+        long h = XxHash64.hashDoubles(data, 0, data.length, DEFAULT_HASH_SEED);
+        addHash(h);
+    }
+
     public void add(String val) {
+        if(val == null || val.isEmpty()){
+            return;
+        }
         long h = XxHash64.hashString(val, 0, val.length(), DEFAULT_HASH_SEED);
         addHash(h);
     }
 
-    private void addHash(long hashcode) {
+    public void add(byte[] val) {
+        long h = XxHash64.hashBytes(val, 0, val.length, DEFAULT_HASH_SEED);
+        addHash(h);
+    }
+
+    public void addHash(long hashcode) {
         // Determine the index using the first p bits
         final int idx = (int) (hashcode >>> (64 - p));
         // Shift out the index bits
@@ -62,13 +83,8 @@ public class Hll {
     }
 
     public int getRegister(int idx) {
-        int i = idx / REG_PER_WORD;
         int word = regs[idx / REG_PER_WORD];
         word = word >>> (REG_WIDTH * (idx % REG_PER_WORD));
-        if(i == 151 || i == 171 || i == 201){
-            int r = word & ((1 << REG_WIDTH) - 1);
-            r = r + 0;
-        }
         return word & ((1 << REG_WIDTH) - 1);
     }
 
@@ -81,6 +97,10 @@ public class Hll {
         int val_mask = ((1 << REG_WIDTH) - 1) << shift;
         // Store the word
         regs[i] = (word & ~val_mask) | val;
+    }
+
+    public double getEstimate() {
+        return size();
     }
 
     public double size() {
@@ -192,9 +212,9 @@ public class Hll {
                             + p + " Provided: " + p0);
         }
 
-        /*if (p0 == p) {
+        if (p0 == p) {
             return this;
-        }*/
+        }
 
         final Hll dest = new Hll(p0);
 
@@ -208,16 +228,24 @@ public class Hll {
         return dest;
     }
 
+    public Hll copy() {
+        Hll hll = new Hll(p);
+        System.arraycopy(regs, 0, hll.regs, 0, regs.length);
+        return hll;
+    }
+
     public static final int getSerializationBytes(final int precision){
         int reg = 1 << precision;
         int words = (reg + REG_PER_WORD - 1) / REG_PER_WORD;
-        return 1 + words * 4;
+        // version + p + regs
+        return 1 + 1 + words * 4;
     }
 
     public byte[] toBytes() {
-        int size = 1 + regs.length * 4;
+        int size = getSerializationBytes(p);
         ByteBuffer byteBuffer = ByteBuffer.allocate(size);
-        byteBuffer.put((byte)p);
+        byteBuffer.put((byte)1); // version
+        byteBuffer.put((byte)p);  // p
         for (int i = 0; i < regs.length; i++) {
             byteBuffer.putInt(regs[i]);
         }
@@ -230,8 +258,11 @@ public class Hll {
     }
 
     public static Hll fromByteBuffer(ByteBuffer byteBuffer) {
+        int version = byteBuffer.get();
+        if(version != 1){
+            throw new IllegalArgumentException("Unsupported version:" + version);
+        }
         int p = byteBuffer.get();
-        System.out.println("version:" +  byteBuffer.get());
         Hll hll = new Hll(p);
         int len = hll.regs.length;
         for (int i = 0; i < len; i++) {
@@ -256,5 +287,29 @@ public class Hll {
             this.rawEst = rawEst;
             this.numZeros = numZeros;
         }
+    }
+
+    public int getP() {
+        return p;
+    }
+
+    public void setP(int p) {
+        this.p = p;
+    }
+
+    public int getReg() {
+        return reg;
+    }
+
+    public void setReg(int reg) {
+        this.reg = reg;
+    }
+
+    public int[] getRegs() {
+        return regs;
+    }
+
+    public void setRegs(int[] regs) {
+        this.regs = regs;
     }
 }

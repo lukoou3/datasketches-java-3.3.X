@@ -1,7 +1,10 @@
 package org.apache.datasketches.hlld;
 
-public class HllUnion {
-    final int maxP;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+
+public class HllUnion implements Serializable {
+    private int maxP;
     private Hll impl;
 
     public HllUnion() {
@@ -10,6 +13,11 @@ public class HllUnion {
     public HllUnion(int maxP) {
         this.maxP = maxP;
         impl = new Hll(this.maxP);
+    }
+
+    private HllUnion(Hll hll) {
+        this.maxP = hll.p;
+        impl = hll;
     }
 
     public Hll getResult() {
@@ -42,5 +50,34 @@ public class HllUnion {
         }
 
         return dest;
+    }
+
+    public static final int getMaxSerializationBytes(final int precision){
+        return Hll.getSerializationBytes(precision);
+    }
+
+    public static HllUnion fromByteBuffer(ByteBuffer byteBuffer) {
+        Hll hll = Hll.fromByteBuffer(byteBuffer);
+        return new HllUnion(hll);
+    }
+
+    public byte[] toBytes() {
+        return impl.toBytes();
+    }
+
+    public int getMaxP() {
+        return maxP;
+    }
+
+    public void setMaxP(int maxP) {
+        this.maxP = maxP;
+    }
+
+    public Hll getImpl() {
+        return impl;
+    }
+
+    public void setImpl(Hll impl) {
+        this.impl = impl;
     }
 }
