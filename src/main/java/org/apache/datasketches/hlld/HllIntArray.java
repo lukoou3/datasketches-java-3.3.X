@@ -44,8 +44,19 @@ public class HllIntArray extends HllImpl {
     }
 
     @Override
+    boolean isMemory() {
+        return false;
+    }
+
+    @Override
     int getPrecision() {
         return p;
+    }
+
+    @Override
+    void setPrecision(int precision) {
+        this.p = precision;
+        this.reg = 1 << p;
     }
 
     public int getP() {

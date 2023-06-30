@@ -153,7 +153,11 @@ abstract class HllImpl implements Serializable {
         return Math.round(reg * Math.log(reg / ((double) numZeros)));
     }
 
+    abstract boolean isMemory();
+
     abstract int getPrecision();
+
+    abstract void setPrecision(int precision);
 
     static class RawEstAndNumZeros {
         double rawEst;

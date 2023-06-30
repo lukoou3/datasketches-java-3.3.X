@@ -433,6 +433,7 @@ public class Union extends BaseHllSketch {
         final HllSketch gdtHll8Heap = downsample(gadget, srcLgK);
         //merge src(Hll4,6,8;heap/mem;Mode=HLL) -> gdt(Hll8,heap,Mode=HLL)
         mergeHlltoHLLmode(source, gdtHll8Heap, srcLgK, gadgetLgK, srcIsMem, false);
+        // 使用字节数据时，拷贝字节
         hllSketchImpl = useGadgetMemory(gadget, gdtHll8Heap, true).hllSketchImpl;
         break;
       }
@@ -469,6 +470,7 @@ public class Union extends BaseHllSketch {
     return hllSketchImpl;
   }
 
+  // 更新底层数组
   private static final HllSketch useGadgetMemory(
       final HllSketch gadget, final HllSketch hll8Heap, final boolean setOooFlag) {
     final WritableMemory wmem = gadget.getWritableMemory();    //use the gdt wmem

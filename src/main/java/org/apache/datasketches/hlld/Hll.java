@@ -54,5 +54,7 @@ public class Hll {
         return hllImpl.size();
     }
 
-
+    public int getPrecision() {
+        return hllImpl.getPrecision();
+    }
 }

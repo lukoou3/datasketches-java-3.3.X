@@ -52,19 +52,29 @@ public class DirectHllIntArray extends HllImpl {
     }
 
     @Override
+    boolean isMemory() {
+        return true;
+    }
+
+    @Override
     void reset() {
         int p = getPrecision();
         int reg = 1 << p;
         int words = (reg + REG_PER_WORD - 1) / REG_PER_WORD;
-        final long endBytes = REGS_BYTE + words << 2;
-        for (int i = REGS_BYTE; i < endBytes; i++) {
-            byteBuffer.put((byte)0);
+        final long endBytes = initPosition + REGS_BYTE + words << 2;
+        for (int i = initPosition + REGS_BYTE; i < endBytes; i++) {
+            byteBuffer.put(i, (byte)0);
         }
     }
 
     @Override
     int getPrecision() {
         return byteBuffer.get(initPosition + PRECISION_BYTE);
+    }
+
+    @Override
+    void setPrecision(int precision) {
+        this.byteBuffer.put(initPosition + PRECISION_BYTE, (byte)precision);
     }
 
     public static final int getUpdatableSerializationBytes(final int precision){

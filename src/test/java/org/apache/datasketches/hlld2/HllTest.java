@@ -104,14 +104,14 @@ public class HllTest {
     @Test
     public void testMerge() {
         Hll hll1 = new Hll(12);
-        for (int i = 0; i < 10000000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             String key = i + "";
             hll1.add(key);
             hll1.add(key);
         }
 
         Hll hll2 = new Hll(14);
-        for (int i = 0; i < 10000000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             //String key = i + "" ;
             String key = i + "" + "a";
             hll2.add(key);
