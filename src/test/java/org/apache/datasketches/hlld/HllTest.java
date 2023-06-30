@@ -48,7 +48,7 @@ public class HllTest {
     public void testSize() {
         long[] ns = new long[]{100, 1000, 10000, 100000, 10000000, 100000000};
         for (long n : ns) {
-            Hll hll = new Hll(16);
+            Hll hll = new Hll(14);
             for (int i = 0; i < n; i++) {
                 String key = i + "";
                 hll.add(key);

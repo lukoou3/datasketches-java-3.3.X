@@ -77,7 +77,7 @@ public class HllSketch extends BaseHllSketch {
   public static final TgtHllType DEFAULT_HLL_TYPE = TgtHllType.HLL_4;
 
   private static final String LS = System.getProperty("line.separator");
-  HllSketchImpl hllSketchImpl = null;
+  HllSketchImpl hllSketchImpl = null; // HllSketch包装HllSketchImpl实现堆内存和堆外内存的统一，方便druid使用
 
   /**
    * Constructs a new on-heap sketch with the default lgConfigK and tgtHllType.
