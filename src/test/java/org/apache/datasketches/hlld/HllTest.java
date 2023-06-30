@@ -40,6 +40,32 @@ public class HllTest {
     }
 
     @Test
+    public void testCopy() {
+        Hll hll1 = new Hll(14);
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll1.add(key);
+        }
+
+        Hll hll2 = new Hll(12, ByteBuffer.allocate(DirectHllIntArray.getUpdatableSerializationBytes(12)));
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll2.add(key);
+        }
+
+        Hll copy1 = hll1.copy();
+        Hll copy2 = hll2.copy();
+
+        System.out.println((long)hll1.size());
+        System.out.println((long)hll2.size());
+        System.out.println("#####################");
+        System.out.println(copy1.hllImpl.getPrecision());
+        System.out.println(copy2.hllImpl.getPrecision());
+        System.out.println((long)copy1.size());
+        System.out.println((long)copy2.size());
+    }
+
+    @Test
     public void testMerge0() {
         // 两个普通Hll, 普通HllUnion
         Hll hll1 = new Hll(14);
@@ -208,5 +234,101 @@ public class HllTest {
 
         System.out.println((long) union.getResult().size());
         System.out.println(union.getResult().hllImpl.isMemory());
+    }
+
+    @Test
+    public void testSer() {
+        Hll hll1 = new Hll(14);
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll1.add(key);
+        }
+
+        Hll hll2 = new Hll(12, ByteBuffer.allocate(DirectHllIntArray.getUpdatableSerializationBytes(12)));
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll2.add(key);
+        }
+
+        System.out.println(hll1.size());
+        System.out.println(hll2.size());
+
+        byte[] bytes1 = hll1.toBytes();
+        byte[] bytes2 = hll2.toBytes();
+        Hll hllDer1 = Hll.fromBytes(bytes1);
+        Hll hllDer2 = Hll.fromBytes(bytes2);
+
+        System.out.println(hllDer1.size());
+        System.out.println(hllDer2.size());
+        assert !hllDer1.hllImpl.isMemory();
+        assert !hllDer2.hllImpl.isMemory();
+    }
+
+    @Test
+    public void testWrapBytes() {
+        Hll hll1 = new Hll(14);
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll1.add(key);
+        }
+
+        Hll hll2 = new Hll(12, ByteBuffer.allocate(DirectHllIntArray.getUpdatableSerializationBytes(12)));
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll2.add(key);
+        }
+
+        System.out.println(hll1.size());
+        System.out.println(hll2.size());
+
+        byte[] bytes1 = hll1.toBytes();
+        byte[] bytes2 = hll2.toBytes();
+
+        Hll hllDer1 = Hll.wrapBytes(bytes1);
+        Hll hllDer2 = Hll.wrapBytes(bytes2);
+
+        System.out.println(hllDer1.size());
+        System.out.println(hllDer2.size());
+        assert hllDer1.hllImpl.isMemory();
+        assert hllDer2.hllImpl.isMemory();
+    }
+
+    @Test
+    public void testWrapByteBuffer() {
+        Hll hll1 = new Hll(14);
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll1.add(key);
+        }
+
+        Hll hll2 = new Hll(12, ByteBuffer.allocate(DirectHllIntArray.getUpdatableSerializationBytes(12)));
+        for (int i = 0; i < 1000000; i++) {
+            String key = i + "";
+            hll2.add(key);
+        }
+
+        System.out.println(hll1.size());
+        System.out.println(hll2.size());
+
+        byte[] bytes1 = hll1.toBytes();
+        byte[] bytes2 = hll2.toBytes();
+        ByteBuffer byteBuffer1 = ByteBuffer.allocate(bytes1.length + 100);
+        byteBuffer1.position(100);
+        //byteBuffer1.put(bytes1, 100, bytes1.length);
+        byteBuffer1.put(bytes1);
+        byteBuffer1.position(100);
+        ByteBuffer byteBuffer2 = ByteBuffer.allocate(bytes2.length + 200);
+        byteBuffer2.position(200);
+        //byteBuffer2.put(bytes2, 200, bytes2.length);
+        byteBuffer2.put(bytes2);
+        byteBuffer2.position(200);
+
+        Hll hllDer1 = Hll.wrapByteBuffer(byteBuffer1);
+        Hll hllDer2 = Hll.wrapByteBuffer(byteBuffer2);
+
+        System.out.println(hllDer1.size());
+        System.out.println(hllDer2.size());
+        assert hllDer1.hllImpl.isMemory();
+        assert hllDer2.hllImpl.isMemory();
     }
 }

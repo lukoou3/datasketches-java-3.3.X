@@ -5,12 +5,15 @@ import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
 import org.apache.datasketches.memory.internal.XxHash64;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import static org.apache.datasketches.hlld.Hll.DEFAULT_HASH_SEED;
-import static org.apache.datasketches.hlld2.HllConstants.*;
+import static org.apache.datasketches.hlld.HllConstants.*;
 
 abstract class HllImpl implements Serializable {
+    static final int REG_WIDTH = 6; // Bits per register
+    static final int REG_PER_WORD = 5; // floor(INT_WIDTH / REG_WIDTH)
 
     public void add(long val) {
         final long[] data = { val };
@@ -158,6 +161,19 @@ abstract class HllImpl implements Serializable {
     abstract int getPrecision();
 
     abstract void setPrecision(int precision);
+
+    // 复制Hll到堆内存实例HllIntArray
+    abstract HllImpl copy();
+
+    public int getSerializationBytes(){
+        int precision = getPrecision();
+        int reg = 1 << precision;
+        int words = (reg + REG_PER_WORD - 1) / REG_PER_WORD;
+        // version + p + regs
+        return 1 + 1 + words * 4;
+    }
+
+    abstract byte[] toBytes();
 
     static class RawEstAndNumZeros {
         double rawEst;

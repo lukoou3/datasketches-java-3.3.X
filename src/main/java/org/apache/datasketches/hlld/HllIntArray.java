@@ -1,8 +1,9 @@
 package org.apache.datasketches.hlld;
 
+import java.nio.ByteBuffer;
+
 public class HllIntArray extends HllImpl {
-    static final int REG_WIDTH = 6; // Bits per register
-    static final int REG_PER_WORD = 5; // floor(INT_WIDTH / REG_WIDTH)
+
 
     int p; // precision, number of register bits
     int reg; // reg = 2^p
@@ -57,6 +58,44 @@ public class HllIntArray extends HllImpl {
     void setPrecision(int precision) {
         this.p = precision;
         this.reg = 1 << p;
+    }
+
+    @Override
+    HllImpl copy() {
+        HllIntArray hll = new HllIntArray(p);
+        System.arraycopy(regs, 0, hll.regs, 0, regs.length);
+        return hll;
+    }
+
+    @Override
+    byte[] toBytes() {
+        int size = getSerializationBytes();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+        byteBuffer.put((byte)1); // version
+        byteBuffer.put((byte)p);  // p
+        for (int i = 0; i < regs.length; i++) {
+            byteBuffer.putInt(regs[i]);
+        }
+        return byteBuffer.array();
+    }
+
+    public static HllIntArray fromBytes(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        return fromByteBuffer(byteBuffer);
+    }
+
+    public static HllIntArray fromByteBuffer(ByteBuffer byteBuffer) {
+        int version = byteBuffer.get();
+        if(version != 1){
+            throw new IllegalArgumentException("Unsupported version:" + version);
+        }
+        int p = byteBuffer.get();
+        HllIntArray hll = new HllIntArray(p);
+        int len = hll.regs.length;
+        for (int i = 0; i < len; i++) {
+            hll.regs[i] = byteBuffer.getInt();
+        }
+        return hll;
     }
 
     public int getP() {

@@ -1,10 +1,7 @@
 package org.apache.datasketches.hlld;
 
 import java.nio.ByteBuffer;
-
-import static org.apache.datasketches.hlld.HllIntArray.REG_PER_WORD;
-import static org.apache.datasketches.hlld.HllIntArray.REG_WIDTH;
-
+import java.nio.ByteOrder;
 
 /**
  * 基于ByteBuffer操作Hll，主要用于druid中聚合使用堆外内存的情况
@@ -77,10 +74,48 @@ public class DirectHllIntArray extends HllImpl {
         this.byteBuffer.put(initPosition + PRECISION_BYTE, (byte)precision);
     }
 
+    @Override
+    HllImpl copy() {
+        int p = getPrecision();
+        HllIntArray hll = new HllIntArray(p);
+        for (int i = 0; i < hll.regs.length; i++) {
+            int pos = initPosition + REGS_BYTE + (i << 2);
+            int word = byteBuffer.getInt(pos);
+            hll.regs[i] = word;
+        }
+        return hll;
+    }
+
+    @Override
+    byte[] toBytes() {
+        int size = getSerializationBytes();
+        byte[] bytes = new byte[size];
+        assert byteBuffer.order() == ByteOrder.BIG_ENDIAN;
+        byteBuffer.get(bytes, initPosition, size);
+        return bytes;
+    }
+
+    public static DirectHllIntArray wrapBytes(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        return wrapByteBuffer(byteBuffer);
+    }
+
+    public static DirectHllIntArray wrapByteBuffer(ByteBuffer byteBuffer) {
+        int initPosition = byteBuffer.position();
+        int version = byteBuffer.get(initPosition);
+        if(version != 1){
+            throw new IllegalArgumentException("Unsupported version:" + version);
+        }
+        int p = byteBuffer.get(initPosition + PRECISION_BYTE);
+        DirectHllIntArray hll = new DirectHllIntArray(p, byteBuffer);
+        return hll;
+    }
+
     public static final int getUpdatableSerializationBytes(final int precision){
         int reg = 1 << precision;
         int words = (reg + REG_PER_WORD - 1) / REG_PER_WORD;
         // version + p + regs
         return 1 + 1 + words * 4;
     }
+
 }

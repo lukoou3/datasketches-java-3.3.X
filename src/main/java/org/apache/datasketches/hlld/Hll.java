@@ -26,6 +26,24 @@ public class Hll {
         hllImpl = new DirectHllIntArray(precision, byteBuffer);
     }
 
+    Hll(final HllImpl that) {
+        hllImpl = that;
+    }
+
+   /**
+   * Copy constructor used by copy().
+   */
+    Hll(final Hll that) {
+        hllImpl = that.hllImpl.copy();
+    }
+
+    /**
+     * 复制Hll到堆内存实例HllIntArray
+     */
+    public Hll copy() {
+        return new Hll(this);
+    }
+
     public void add(long val) {
         hllImpl.add(val);
     }
@@ -56,5 +74,29 @@ public class Hll {
 
     public int getPrecision() {
         return hllImpl.getPrecision();
+    }
+
+    public static final int getUpdatableSerializationBytes(final int precision){
+        return DirectHllIntArray.getUpdatableSerializationBytes(precision);
+    }
+
+    public byte[] toBytes() {
+        return hllImpl.toBytes();
+    }
+
+    public static Hll fromBytes(byte[] bytes) {
+        return new Hll(HllIntArray.fromBytes(bytes));
+    }
+
+    public static Hll fromByteBuffer(ByteBuffer byteBuffer) {
+        return new Hll(HllIntArray.fromByteBuffer(byteBuffer));
+    }
+
+    public static Hll wrapBytes(byte[] bytes) {
+        return new Hll(DirectHllIntArray.wrapBytes(bytes));
+    }
+
+    public static Hll wrapByteBuffer(ByteBuffer byteBuffer) {
+        return new Hll(DirectHllIntArray.wrapByteBuffer(byteBuffer));
     }
 }
