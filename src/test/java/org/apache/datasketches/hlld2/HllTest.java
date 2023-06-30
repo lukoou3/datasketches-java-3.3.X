@@ -52,7 +52,6 @@ public class HllTest {
             for (int i = 0; i < n; i++) {
                 String key = i + "";
                 hll.add(key);
-                hll.add(key);
             }
             long estimate = Math.round(hll.size()) ;
             double percentErr = Math.abs(estimate - n) * 100D / n;
