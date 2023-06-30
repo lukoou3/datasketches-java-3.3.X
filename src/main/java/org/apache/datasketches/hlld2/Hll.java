@@ -1,4 +1,4 @@
-package org.apache.datasketches.hlld;
+package org.apache.datasketches.hlld2;
 
 import it.unimi.dsi.fastutil.doubles.Double2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static org.apache.datasketches.hlld.HllConstants.*;
+import static org.apache.datasketches.hlld2.HllConstants.*;
 
 /**
  * c语言HyperLogLog版本hlld转换为java实现

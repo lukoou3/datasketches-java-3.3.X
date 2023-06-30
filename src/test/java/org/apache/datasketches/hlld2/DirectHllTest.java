@@ -1,10 +1,10 @@
-package org.apache.datasketches.hlld;
+package org.apache.datasketches.hlld2;
 
 import org.testng.annotations.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.apache.datasketches.hlld.Hll.REG_PER_WORD;
+import static org.apache.datasketches.hlld2.Hll.REG_PER_WORD;
 
 public class DirectHllTest {
 

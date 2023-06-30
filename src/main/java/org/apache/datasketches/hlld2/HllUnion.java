@@ -1,4 +1,4 @@
-package org.apache.datasketches.hlld;
+package org.apache.datasketches.hlld2;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;

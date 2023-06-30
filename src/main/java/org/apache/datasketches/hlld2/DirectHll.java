@@ -1,4 +1,4 @@
-package org.apache.datasketches.hlld;
+package org.apache.datasketches.hlld2;
 
 import it.unimi.dsi.fastutil.doubles.Double2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2IntSortedMap;
@@ -7,8 +7,8 @@ import org.apache.datasketches.memory.internal.XxHash64;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import static org.apache.datasketches.hlld.Hll.*;
-import static org.apache.datasketches.hlld.HllConstants.*;
+import static org.apache.datasketches.hlld2.Hll.*;
+import static org.apache.datasketches.hlld2.HllConstants.*;
 
 /**
  * 基于ByteBuffer操作Hll，主要用于druid中聚合使用堆外内存的情况
