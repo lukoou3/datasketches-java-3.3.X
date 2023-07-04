@@ -21,6 +21,11 @@ public class HllUnion implements Serializable {
         impl = new Hll(this.maxP, byteBuffer);
     }
 
+    private HllUnion(Hll hll) {
+        this.maxP = hll.getPrecision();
+        impl = hll;
+    }
+
     public Hll getResult() {
         return impl;
     }
@@ -114,5 +119,29 @@ public class HllUnion implements Serializable {
         }
 
         return dest;
+    }
+
+    public static final int getUpdatableSerializationBytes(final int precision){
+        return Hll.getUpdatableSerializationBytes(precision);
+    }
+
+    public byte[] toBytes() {
+        return impl.toBytes();
+    }
+
+    public static HllUnion fromBytes(byte[] bytes) {
+        return new HllUnion(Hll.fromBytes(bytes));
+    }
+
+    public static HllUnion fromByteBuffer(ByteBuffer byteBuffer) {
+        return new HllUnion(Hll.fromByteBuffer(byteBuffer));
+    }
+
+    public static HllUnion wrapBytes(byte[] bytes) {
+        return new HllUnion(Hll.wrapBytes(bytes));
+    }
+
+    public static HllUnion wrapByteBuffer(ByteBuffer byteBuffer) {
+        return new HllUnion(Hll.wrapByteBuffer(byteBuffer));
     }
 }

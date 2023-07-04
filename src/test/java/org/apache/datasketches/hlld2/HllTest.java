@@ -75,6 +75,32 @@ public class HllTest {
         }
     }
 
+    @Test
+    public void testMergeFromBuffer() {
+        Hll hll = new Hll(14);
+        for (int i = 0; i < 3000000; i++) {
+            String key = i + "";
+            hll.add(key);
+        }
+
+        long start = System.currentTimeMillis();
+
+        HllUnion union = new HllUnion(14);
+        byte[] bytes = union.toBytes();
+        ByteBuffer unionBuffer = ByteBuffer.wrap(bytes);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(hll.toBytes());
+        for (int i = 0; i < 10000; i++) {
+            union = HllUnion.fromByteBuffer(unionBuffer.duplicate());
+            ByteBuffer duplicate = byteBuffer.duplicate();
+            union.update(Hll.fromByteBuffer(duplicate));
+            unionBuffer.duplicate().put(union.toBytes());
+        }
+        union = HllUnion.fromByteBuffer(unionBuffer.duplicate());
+        System.out.println((long)union.getResult().size());
+        long end = System.currentTimeMillis();
+        System.out.println("ts:" + (end - start) );
+    }
+
 
     @Test
     public void testMerge0() {
