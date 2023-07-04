@@ -99,6 +99,28 @@ public class Hll implements Serializable {
         regs[i] = (word & ~val_mask) | val;
     }
 
+    int getWord(int idx) {
+        return regs[idx / REG_PER_WORD];
+    }
+
+    void setWord(int idx, int word) {
+        int i = idx / REG_PER_WORD;
+        regs[i] = word;
+    }
+
+    static int getRegisterFromWord(int word, int idx){
+        word = word >>> (REG_WIDTH * idx);
+        return word & ((1 << REG_WIDTH) - 1);
+    }
+
+    static int wordSetRegister(int word, int idx, int val){
+        int shift = REG_WIDTH * idx;
+        val = val << shift;
+        int val_mask = ((1 << REG_WIDTH) - 1) << shift;
+        return  (word & ~val_mask) | val;
+    }
+
+
     public double getEstimate() {
         return size();
     }

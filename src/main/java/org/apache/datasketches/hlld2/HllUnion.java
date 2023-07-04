@@ -40,6 +40,23 @@ public class HllUnion implements Serializable {
         }
 
         int srcV, tgtV;
+        for (int i = 0; i < source.reg; i += 5){
+            int srcWord = source.getWord(i);
+            int tgtWord = dest.getWord(i);
+            int word =  tgtWord;
+            for (int j = 0; j < 5; j++) {
+                srcV = Hll.getRegisterFromWord(srcWord, j);
+                tgtV = Hll.getRegisterFromWord(word, j);
+                if (srcV > tgtV) {
+                    word = Hll.wordSetRegister(word, j, srcV);
+                }
+            }
+            if (word != tgtWord) {
+                dest.setWord(i, word);
+            }
+        }
+
+        /*int srcV, tgtV;
         for (int i = 0; i < source.reg; i++) {
 
             srcV = source.getRegister(i);
@@ -47,7 +64,7 @@ public class HllUnion implements Serializable {
             if (srcV > tgtV) {
                 dest.setRegister(i, srcV);
             }
-        }
+        }*/
 
         return dest;
     }

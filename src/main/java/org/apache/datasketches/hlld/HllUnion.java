@@ -69,7 +69,27 @@ public class HllUnion implements Serializable {
         return hllImpl;
     }
 
+    // 比merge2快，普通int数组快1/5，字节数组模式快3倍左右
     private static void merge(HllImpl sourceHllImpl, HllImpl descHllImpl) {
+        int srcV, tgtV, reg = 1 << sourceHllImpl.getPrecision();
+        for (int i = 0; i < reg; i += 5) {
+            int srcWord = sourceHllImpl.getWord(i);
+            int tgtWord = descHllImpl.getWord(i);
+            int word =  tgtWord;
+            for (int j = 0; j < 5; j++) {
+                srcV = HllImpl.getRegisterFromWord(srcWord, j);
+                tgtV = HllImpl.getRegisterFromWord(word, j);
+                if (srcV > tgtV) {
+                    word = HllImpl.wordSetRegister(word, j, srcV);
+                }
+            }
+            if (word != tgtWord) {
+                descHllImpl.setWord(i, word);
+            }
+        }
+    }
+
+    private static void merge2(HllImpl sourceHllImpl, HllImpl descHllImpl) {
         int srcV, tgtV, reg = 1 << sourceHllImpl.getPrecision();
         for (int i = 0; i < reg; i++) {
             srcV = sourceHllImpl.getRegister(i);

@@ -38,6 +38,18 @@ public class HllIntArray extends HllImpl {
     }
 
     @Override
+    int getWord(int idx) {
+        return regs[idx / REG_PER_WORD];
+    }
+
+    @Override
+    void setWord(int idx, int word) {
+        int i = idx / REG_PER_WORD;
+        regs[i] = word;
+    }
+
+
+    @Override
     void reset() {
         for (int i = 0; i < reg; i++) {
             regs[i] = 0;

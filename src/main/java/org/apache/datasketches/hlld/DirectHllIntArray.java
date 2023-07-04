@@ -49,6 +49,18 @@ public class DirectHllIntArray extends HllImpl {
     }
 
     @Override
+    int getWord(int idx) {
+        return byteBuffer.getInt(initPosition + REGS_BYTE + ((idx / REG_PER_WORD) << 2) );
+    }
+
+    @Override
+    void setWord(int idx, int word) {
+        int i = idx / REG_PER_WORD;
+        int pos = initPosition + REGS_BYTE + (i << 2);
+        byteBuffer.putInt(pos, word);
+    }
+
+    @Override
     boolean isMemory() {
         return true;
     }

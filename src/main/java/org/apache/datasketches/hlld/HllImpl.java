@@ -58,6 +58,22 @@ abstract class HllImpl implements Serializable {
 
     abstract void setRegister(int idx, int val);
 
+    abstract int getWord(int idx);
+
+    abstract void setWord(int idx, int word);
+
+    static int getRegisterFromWord(int word, int idx){
+        word = word >>> (REG_WIDTH * idx);
+        return word & ((1 << REG_WIDTH) - 1);
+    }
+
+    static int wordSetRegister(int word, int idx, int val){
+        int shift = REG_WIDTH * idx;
+        val = val << shift;
+        int val_mask = ((1 << REG_WIDTH) - 1) << shift;
+        return  (word & ~val_mask) | val;
+    }
+
     abstract void reset();
 
     public double getEstimate() {
