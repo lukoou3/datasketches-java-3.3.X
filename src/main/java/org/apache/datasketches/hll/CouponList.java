@@ -39,7 +39,7 @@ import org.apache.datasketches.memory.WritableMemory;
 class CouponList extends AbstractCoupons {
   int lgCouponArrInts;
   int couponCount;
-  int[] couponIntArr;
+  int[] couponIntArr;// 相当于存的hash
 
   /**
    * New instance constructor for LIST or SET.

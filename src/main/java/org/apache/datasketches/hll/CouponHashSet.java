@@ -135,6 +135,7 @@ class CouponHashSet extends CouponList {
 
   private boolean checkGrowOrPromote() {
     if ((RESIZE_DENOM * couponCount) > (RESIZE_NUMER * (1 << lgCouponArrInts))) {
+      // 2**9 = 512, 512就变更
       if (lgCouponArrInts == (lgConfigK - 3)) { //at max size
         return true; // promote to HLL
       }

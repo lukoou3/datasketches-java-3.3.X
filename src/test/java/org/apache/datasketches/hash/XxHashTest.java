@@ -34,6 +34,7 @@ public class XxHashTest {
   public void longCheck() {
     long seed = 0;
     long hash1 = XxHash.hash(123L, seed);
+    System.out.println(hash1);
     long[] arr = new long[1];
     arr[0] = 123L;
     Memory mem = Memory.wrap(arr);
@@ -41,4 +42,18 @@ public class XxHashTest {
     assertEquals(hash2, hash1);
   }
 
+  @Test
+  public void testXxHashJdk11() {
+    /**
+     * jdk11运行直接报错，但是引入编译好的jar没问题，莫名其妙
+     *         <dependency>
+     *             <groupId>org.apache.datasketches</groupId>
+     *             <artifactId>datasketches-memory</artifactId>
+     *             <version>2.1.0</version>
+     *         </dependency>
+     */
+    long seed = 0;
+    long hash1 = com.zdjz.galaxy.sketch.util.XxHash64.hash(123L, seed);
+    System.out.println(hash1);
+  }
 }

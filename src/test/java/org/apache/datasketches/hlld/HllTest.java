@@ -66,6 +66,84 @@ public class HllTest {
     }
 
     @Test
+    public void testMergeSpeed() {
+        Hll hll = new Hll(14);
+        for (int i = 0; i < 30000000; i++) {
+            String key = i + "";
+            hll.add(key);
+        }
+
+        int p = 14;
+        int bytes = DirectHllIntArray.getUpdatableSerializationBytes(p);
+
+        long start = System.currentTimeMillis();
+
+        HllUnion union = new HllUnion(p, ByteBuffer.allocate(bytes));
+        ByteBuffer byteBuffer = ByteBuffer.wrap(hll.toBytes());
+        for (int i = 0; i < 10000 * 10; i++) {
+            ByteBuffer duplicate = byteBuffer.duplicate();
+            union.update(Hll.wrapByteBuffer(duplicate));
+        }
+
+        System.out.println((long) union.getResult().size());
+        long end = System.currentTimeMillis();
+        System.out.println("ts:" + (end - start) );
+    }
+
+    @Test
+    public void testMergeSpeed1() {
+        Hll hll = new Hll(12);
+        for (int i = 0; i < 30000000; i++) {
+            String key = i + "";
+            hll.add(key);
+        }
+
+        int p = 12;
+        int bytes = DirectHllIntArray.getUpdatableSerializationBytes(p);
+
+        long start = System.currentTimeMillis();
+
+        HllUnion union = new HllUnion(p, ByteBuffer.allocate(bytes));
+        ByteBuffer byteBuffer = ByteBuffer.wrap(hll.toBytes());
+        for (int i = 0; i < 10000 * 10; i++) {
+            ByteBuffer duplicate = byteBuffer.duplicate();
+            union.update(Hll.wrapByteBuffer(duplicate));
+        }
+
+        System.out.println((long) union.getResult().size());
+        long end = System.currentTimeMillis();
+        System.out.println("ts:" + (end - start) );
+    }
+
+    @Test
+    public void testMergeSpeed2() {
+        int p = 10;
+        Hll hll = new Hll(p);
+        for (int i = 0; i < 30000000; i++) {
+            String key = i + "";
+            hll.add(key);
+        }
+
+
+        int bytes = DirectHllIntArray.getUpdatableSerializationBytes(p);
+
+        for (int j = 0; j < 100; j++) {
+            long start = System.currentTimeMillis();
+
+            HllUnion union = new HllUnion(p, ByteBuffer.allocate(bytes));
+            ByteBuffer byteBuffer = ByteBuffer.wrap(hll.toBytes());
+            for (int i = 0; i < 10000; i++) {
+                ByteBuffer duplicate = byteBuffer.duplicate();
+                union.update(Hll.wrapByteBuffer(duplicate));
+            }
+
+            System.out.println((long) union.getResult().size());
+            long end = System.currentTimeMillis();
+            System.out.println("ts:" + (end - start) );
+        }
+    }
+
+    @Test
     public void testMergeFromBuffer() {
         Hll hll = new Hll(14);
         for (int i = 0; i < 3000000; i++) {
@@ -346,7 +424,10 @@ public class HllTest {
             hll1.add(key);
         }
 
-        Hll hll2 = new Hll(12, ByteBuffer.allocate(DirectHllIntArray.getUpdatableSerializationBytes(12)));
+        int position = 8;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(position + DirectHllIntArray.getUpdatableSerializationBytes(12));
+        byteBuffer.position(position);
+        Hll hll2 = new Hll(12, byteBuffer);
         for (int i = 0; i < 1000000; i++) {
             String key = i + "";
             hll2.add(key);

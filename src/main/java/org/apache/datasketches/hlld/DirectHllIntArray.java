@@ -103,7 +103,10 @@ public class DirectHllIntArray extends HllImpl {
         int size = getSerializationBytes();
         byte[] bytes = new byte[size];
         assert byteBuffer.order() == ByteOrder.BIG_ENDIAN;
-        byteBuffer.get(bytes, initPosition, size);
+        int oldPosition = byteBuffer.position();
+        byteBuffer.position(initPosition);
+        byteBuffer.get(bytes, 0, size);
+        byteBuffer.position(oldPosition);
         return bytes;
     }
 
