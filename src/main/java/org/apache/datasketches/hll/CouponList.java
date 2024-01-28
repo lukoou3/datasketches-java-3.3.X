@@ -50,9 +50,9 @@ class CouponList extends AbstractCoupons {
   CouponList(final int lgConfigK, final TgtHllType tgtHllType, final CurMode curMode) {
     super(lgConfigK, tgtHllType, curMode);
     if (curMode == CurMode.LIST) {
-      lgCouponArrInts = LG_INIT_LIST_SIZE;
+      lgCouponArrInts = LG_INIT_LIST_SIZE; // 8
     } else { //SET
-      lgCouponArrInts = LG_INIT_SET_SIZE;
+      lgCouponArrInts = LG_INIT_SET_SIZE; // 32
       assert lgConfigK > 7;
     }
     couponIntArr = new int[1 << lgCouponArrInts];

@@ -21,7 +21,7 @@ public class HllIntArray extends HllImpl {
     @Override
     int getRegister(int idx) {
         int word = regs[idx / REG_PER_WORD];
-        word = word >>> (REG_WIDTH * (idx % REG_PER_WORD));
+        word = word >>> (REG_WIDTH * (idx % REG_PER_WORD)); // 偏移量: REG_WIDTH * (idx % REG_PER_WORD)
         return word & ((1 << REG_WIDTH) - 1);
     }
 
@@ -30,9 +30,9 @@ public class HllIntArray extends HllImpl {
         int i = idx / REG_PER_WORD;
         int word = regs[i];
         // Shift the val into place
-        int shift = REG_WIDTH * (idx % REG_PER_WORD);
-        val = val << shift;
-        int val_mask = ((1 << REG_WIDTH) - 1) << shift;
+        int shift = REG_WIDTH * (idx % REG_PER_WORD); // 偏移量
+        val = val << shift; // 左移偏移量
+        int val_mask = ((1 << REG_WIDTH) - 1) << shift; // 所在bit范围mask
         // Store the word
         regs[i] = (word & ~val_mask) | val;
     }

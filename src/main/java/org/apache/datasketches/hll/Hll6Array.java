@@ -126,10 +126,11 @@ class Hll6Array extends HllArray {
   //on-heap
   private static final void put6Bit(final byte[] arr, final int offsetBytes, final int slotNo,
       final int newValue) {
-    final int startBit = slotNo * 6;
-    final int shift = startBit & 0X7;
-    final int byteIdx = (startBit >>> 3) + offsetBytes;
-    final int valShifted = (newValue & 0X3F) << shift;
+    final int startBit = slotNo * 6; // 起始字节
+    final int shift = startBit & 0X7; // shift, 在起始byte偏移
+    final int byteIdx = (startBit >>> 3) + offsetBytes; // 起始byte所在下标index
+    final int valShifted = (newValue & 0X3F) << shift; // 左移shift
+    // 从在起始byte获取两个byte内容，不修改前shift个bit
     final int curMasked = getShortLE(arr, byteIdx) & (~(VAL_MASK_6 << shift));
     final short insert = (short) (curMasked | valShifted);
     putShortLE(arr, byteIdx, insert);
